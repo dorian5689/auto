@@ -1,0 +1,27 @@
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple   -r requirements.txt
+
+pip list --format=freeze > requirements.txt
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple    pyserial
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple    pynput
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple    DrissionPage
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple    ddddocr
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple    PyYAML
+
+
+pip freeze >requirements.txt
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple    DrissionPage
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple    schedule
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple    ddddocr
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple    pygetwindow
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple    PyYAML
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple    pyserial
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple    pygetwindow
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple    pynput
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple    pygetwindow
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple    pymysql
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple    pandas
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple    pyautogui
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple    mss
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple    opencv-python
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple    loguru
+
