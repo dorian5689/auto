@@ -1,11 +1,12 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-@Time ： 2024/3/4 21:54
+@Time ： 2024/3/5 23:05
 @Auth ： Xq
-@File ：run_henan_oms.py
+@File ：run_henan_sxz.py
 @IDE ：PyCharm
 """
+
 import os
 import re
 import time
@@ -15,6 +16,7 @@ from loguru import logger
 from BrowserOperate.EdgeChromeTools import EdgeChromeCurd
 from DataBaseInfo.HenanOmsMysql.henan_oms_config_new import henan_oms_config_new_sql
 from DataBaseInfo.MysqlTools import MysqlCurd
+from DingInfo.DingBotMix import DingApiTools
 from SdkChange.SdkTools import SdkCurd
 from UkChange.UkTools import UkChangeCurd
 from Config.ConfigHenanOmsMysql import new_south
@@ -46,19 +48,33 @@ class HenanOms(object):
         self.userid = ""
         self.wfname_id = ""
         self.message_dl = {}
-        self.message_cn = {}
-        self.message_cn3 = {}
+        self.message_sxz = {
+            "msgtype": "markdown",
+            "markdown": {
+                "title": "双细则推送",
+                "text":
+                    F'双细则--第{self.wfname_id}个场站:{self.wfname}--异常<br>'
+            }
+
+        }
 
         self.start_run_time = ""
 
     def run_oms(self):
         self.login_soft()
+
     def run_sxz(self):
         self.login_soft()
+
     def now_time_hms(self):
         from datetime import datetime
         current_time = datetime.now()
         return current_time.strftime("%Y-%m-%d %H:%M:%S")
+
+    def now_time_ymd(self):
+        from datetime import datetime
+        current_time = datetime.now()
+        return current_time.strftime("%Y-%m-%d ")
 
     def previous_time_d(self):
         import datetime
@@ -219,13 +235,10 @@ class HenanOms(object):
         self.page.get("https://www.baidu.com", retry=2)
         self.page.close_tabs(others='other')
         time.sleep(2)
-        # self.page.set.window.fullscreen()
         self.page.get(get_henan_url, retry=2)
-
         try:
             self.exit_username_login()
             time.sleep(2)
-
         except Exception as e:
             logger.info(F'退出用户登录！{e}')
         self.page.get(get_henan_url, retry=2)
@@ -239,36 +252,255 @@ class HenanOms(object):
             self.login_web_again()
         except Exception as e:
             logger.warning(F'二次登录--{e}')
-        henan_oms_data = self.get_henan_data()
         try:
-            self.page.ele(F'{henan_ele_dict.get("oms_button")}').click()
+            self.page.ele(F'{henan_ele_dict.get("sxz_button")}').click()
         except:
             return
         time.sleep(1)
         table0 = self.page.get_tab(0)
         try:
-            self.report_load_dl(table0, henan_oms_data)
-            try:
-                self.exit_username_login()
-                time.sleep(2)
-            except Exception as e:
-                logger.warning(F'退出oms登录页！--{e}')
-                pass
+            self.run_3_8(table0)
+            table0.wait
+            table0.ele('x://*[@id="hamburger-container"]').click()
+            table0.wait
         except:
             pass
         try:
-            if self.userid in [6, 8, 11]:
-                self.report_load_cn(table0, henan_oms_data)
-        except Exception as e:
-            print(F'6810 ---{e}')
+            self.run_3_11(table0)
+        except:
             pass
         try:
-            if self.userid in [10]:
-                henan_oms_data3 = self.henan_data3()
-                self.report_load_cn3(table0, henan_oms_data, henan_oms_data3)
-        except Exception as e:
-            print(F'第{self.userid}有问题:{e}')
+            self.run_4_1(table0)
+        except:
             pass
+        try:
+            self.run_4_3(table0)
+        except:
+            pass
+        try:
+            self.run_4_4(table0)
+        except:
+            pass
+        try:
+            self.exit_username_sxz(table0)
+            time.sleep(5)
+            self.exit_username_oms(table0)
+            try:
+                self.page.quit()
+                time.sleep(1)
+                print("网页退出！")
+            except:
+                pass
+            return 1
+        except Exception as e:
+            print(f'运行失败！{e}')
+            return 0
+
+    def exit_username_sxz(self, table0):
+        """
+        用于退出sxz系统
+        :param table0:
+        :return:
+        """
+        table0.ele('x://*[@id="app"]/div/div[2]/div/div[1]/div[3]/div[2]/div/span').click()
+        table0.ele('x://html/body/ul/li/span').click()
+        table0.ele('x://html/body/div[8]/div/div[3]/button[2]/span').click()
+        table0.close()
+        time.sleep(1)
+
+    def send_ding_sxz(self, table0, name):
+        self.message_sxz = {
+            "msgtype": "markdown",
+            "markdown": {
+                "title": "双细则推送",
+                "text":
+                    F'双细则--第{self.wfname_id}个场站:{self.wfname}--异常<br>'
+            }
+
+        }
+        time.sleep(2)
+        save_wind_wfname = self.save_pic_sxz(table0, name)
+        from DingInfo.DingBotMix import DingApiTools
+        # 天润
+        # DAT = DingApiTools(appkey_value=self.appkey, appsecret_value=self.appsecret, chatid_value=self.chatid)
+        # DAT.push_message(self.jf_token, self.message_dl)
+        # DAT.send_file(F'{save_wind_wfname}', 0)
+
+        # 奈卢斯
+        DATNLS = DingApiTools(appkey_value=self.nls_appkey, appsecret_value=self.nls_appsecret,
+                              chatid_value=self.nls_chatid)
+
+        DATNLS.push_message(self.nls_token, self.message_sxz)
+        DATNLS.send_file(F'{save_wind_wfname}', 0)
+
+        # self.update_mysql()
+
+    def run_3_8(self, table0):
+        table0.ele(F'{henan_ele_dict.get("ddglkh_button3")}').click()  # 调度考核管理 3
+        table0.ele(F'{henan_ele_dict.get("ddglkh_button3_8")}').click()  # 风光功率预测考核日考核数据汇总 3-8
+        table0.ele(F'{henan_ele_dict.get("ddglkh_button3_8_L111")}').click()  # 点击风场
+        table0.ele(F'{henan_ele_dict.get("ddglkh_button3_8_L111_st")}').input(self.previous_time_d())
+        table0.ele(F'{henan_ele_dict.get("ddglkh_button3_8_L111_et")}').input(self.now_time_ymd())
+        table0.ele(F'{henan_ele_dict.get("ddglkh_button3_8_L111")}').click()  # 点击风场
+        table0.ele(F'{henan_ele_dict.get("ddglkh_button3_8_L111_search")}').click()
+        # iframe_fg = self.page('风光功率预测考核日考核数据汇总')
+        try:
+            ddglkh_button3_8_L111_data = table0.ele(
+                F'{henan_ele_dict.get("ddglkh_button3_8_L111_data")}').text.split('\n')
+            ddglkh_button3_8_L111_data[0] = ddglkh_button3_8_L111_data[0].replace(" 00:00:00.0", "")
+            for i in range(len(ddglkh_button3_8_L111_data)):
+                ddglkh_button3_8_L111_data[i] = ddglkh_button3_8_L111_data[i].replace('\t', '').strip()
+        except:
+            ddglkh_button3_8_L111_data = [self.previous_time_d(), self.wfname,
+                                          '0', '0', '0', '0', '0', '0', '0', '0']
+
+        MC = MysqlCurd()
+        table_name = F'data_sxz_ddgl_fgflyckh_rkhsjhz'
+        field_name = ['check_data', 'check_wfname',
+                      'today_reports_num', 'today_check_elect', 'today_check_acc', 'today_predicte_elect',
+                      'now_reports_num', 'now_check_elect', 'now_check_acc', 'now_predicte_elect']
+        delect_run_3_8_sql = F"delete from {table_name}  WHERE check_data ='{self.previous_time_d()}' and check_wfname='{self.wfname}'"
+        MC.delete(delect_run_3_8_sql)
+
+        MC.insert_list(table_name, field_name, ddglkh_button3_8_L111_data)
+        res_4 = float(ddglkh_button3_8_L111_data[4])
+        res__2 = float(ddglkh_button3_8_L111_data[-2])
+        name = F'_异常_风光功率预测考核日考核数据汇总'
+        logger.warning(F'1{name[3:]}')
+
+        if res_4 < 80 and res__2 < 85:
+            self.send_ding_sxz(table0, name)
+
+    def run_3_11(self, table0):
+        table0.ele(F'{henan_ele_dict.get("ddglkh_button3_11")}').click()  # 有功功率变化日考核结果 3-11
+        table0.ele(F'{henan_ele_dict.get("ddglkh_button3_11_L111_st")}').input(F'{self.previous_time_d()} \ue007')
+        table0.ele(F'{henan_ele_dict.get("ddglkh_button3_11_L111_et")}').input(self.now_time_ymd())
+        table0.ele(F'{henan_ele_dict.get("ddglkh_button3_11_L111")}').click()  # 选择电场
+        table0.ele(F'{henan_ele_dict.get("ddglkh_button3_11_L111_st")}').input(F'{self.previous_time_d()}  \ue007')
+        table0._wait
+        try:
+            ddglkh_button3_11_L111_data = table0.ele(F'{henan_ele_dict.get("ddglkh_button3_11_L111_data")}').text.split(
+                '\n')
+            for i in range(len(ddglkh_button3_11_L111_data)):
+                ddglkh_button3_11_L111_data[i] = ddglkh_button3_11_L111_data[i].replace('\t', '').strip()
+        except:
+            ddglkh_button3_11_L111_data = [self.previous_time_d(), self.wfname, '0', '0', ]
+        MC = MysqlCurd()
+        table_name = F'data_sxz_ddgl_ygglbh_rkhjg'
+        field_name = ['check_data', 'check_wfname', 'one_check_elect', 'ten_check_elect']
+        delect_run_3_8_sql = F"delete from {table_name}  WHERE check_data ='{self.previous_time_d()}' and check_wfname='{self.wfname}'"
+        MC.delete(delect_run_3_8_sql)
+
+        MC.insert_list(table_name, field_name, ddglkh_button3_11_L111_data)
+        res_2 = float(ddglkh_button3_11_L111_data[2])
+        res_3 = float(ddglkh_button3_11_L111_data[3])
+        name = F'_异常_有功功率变化日考核结果'
+        logger.info(F'2_{self.wfname}{name}')
+        if res_2 > 0 and res_3 > 0:
+            self.send_ding_sxz(table0, name=name)
+
+    def run_4_1(self, table0):
+        table0.ele(F'{henan_ele_dict.get("jsglkh_button4")}').click()  # 技术考核管理 4
+        table0.ele(F'{henan_ele_dict.get("jsglkh_button4_1")}').click()  # 动态无功装置补偿可用率 4-1
+        table0.ele(F'{henan_ele_dict.get("jsglkh_button4_1_L111_st")}').input(F'{self.previous_time_d()}  \ue007')
+        table0.ele(F'{henan_ele_dict.get("jsglkh_button4_1_L111_et")}').input(self.now_time_ymd())
+        table0.ele(F'{henan_ele_dict.get("jsglkh_button4_1_L111")}').click()  # 点击风场
+        table0.ele(F'{henan_ele_dict.get("jsglkh_button4_1_L111_search")}').click()
+        try:
+            jsglkh_button4_1_L111_data = table0.ele(
+                F'{henan_ele_dict.get("jsglkh_button4_1_L111_data")}').text.split('\n')
+            for i in range(len(jsglkh_button4_1_L111_data)):
+                jsglkh_button4_1_L111_data[i] = jsglkh_button4_1_L111_data[i].replace('\t', '').strip()
+        except:
+            jsglkh_button4_1_L111_data = [self.previous_time_d(), self.wfname, '0']
+        MC = MysqlCurd()
+        table_name = F'data_sxz_jsglkh_dtwgbczzkhjg'
+        field_name = ['check_data', 'check_wfname', 'operation_rate']
+
+        delect_run_3_8_sql = F"delete from {table_name}  WHERE check_data ='{self.previous_time_d()}' and check_wfname='{self.wfname}'"
+        MC.delete(delect_run_3_8_sql)
+
+        MC.insert_list(table_name, field_name, jsglkh_button4_1_L111_data)
+        res_2 = float(jsglkh_button4_1_L111_data[-1])
+        name = F'异常_AGC投运率'
+        logger.info(F'3_{self.wfname}{name}')
+        if res_2 < 98:
+            self.send_ding_sxz(table0, name)
+
+    def run_4_3(self, table0):
+        table0.ele(F'{henan_ele_dict.get("jsglkh_button4_3")}').click()  # 有功调节能力考核 4-3
+        table0.ele(F'{henan_ele_dict.get("jsglkh_button4_3_1")}').click()  # acg 投运率
+        table0.ele(F'{henan_ele_dict.get("jsglkh_button4_3_1_L1")}').click()  # 点击风场
+        table0.ele(F'{henan_ele_dict.get("jsglkh_button4_3_1_R2")}').click()  # 日投运率
+        table0.ele(F'{henan_ele_dict.get("jsglkh_button4_3_1_R2_st")}').input(F'{self.previous_time_d()}  \ue007')
+        table0.ele(F'{henan_ele_dict.get("jsglkh_button4_3_1_R2_et")}').input(self.now_time_ymd())
+        table0.ele(F'{henan_ele_dict.get("jsglkh_button4_3_1_R2_search")}').click()
+        try:
+            jsglkh_button4_3_1_R2_data = table0.ele(
+                F'{henan_ele_dict.get("jsglkh_button4_3_1_R2_data")}').text.split('\n')[1:]
+            for i in range(len(jsglkh_button4_3_1_R2_data)):
+                jsglkh_button4_3_1_R2_data[i] = jsglkh_button4_3_1_R2_data[i].replace('\t', '').strip()
+        except:
+            jsglkh_button4_3_1_R2_data = [self.previous_time_d(), self.wfname, '0']
+        MC = MysqlCurd()
+        table_name = F'data_sxz_jsglkh_ygtjnlkh_agctyl'
+        field_name = ['check_data', 'check_wfname', 'operation_rate']
+        delect_run_3_8_sql = F"delete from {table_name}  WHERE check_data ='{self.previous_time_d()}' and check_wfname='{self.wfname}'"
+        MC.delete(delect_run_3_8_sql)
+
+        MC.insert_list(table_name, field_name, jsglkh_button4_3_1_R2_data)
+        res_2 = float(jsglkh_button4_3_1_R2_data[-1])
+        name = F'异常_acg日合格率'
+        logger.warning(F'4_{self.wfname}{name[3:]}')
+
+        if res_2 < 96:
+            self.send_ding_sxz(table0, name)
+
+    def run_4_4(self, table0):
+        table0.ele(F'{henan_ele_dict.get("jsglkh_button4_4")}').click()  # 并网电压曲线考核结果 4-4
+        table0.ele(F'{henan_ele_dict.get("jsglkh_button4_4_T3")}').click()  # 日合格率结果
+        table0.ele(F'{henan_ele_dict.get("jsglkh_button4_4_T3_st")}').input(F'{self.previous_time_d()}  \ue007')
+        table0.ele(F'{henan_ele_dict.get("jsglkh_button4_4_T3_et")}').input(self.now_time_ymd())
+        # table0.ele(F'{henan_ele_dict.get("jsglkh_button41_L111")}').click()  # 点击风场
+        table0.ele(F'{henan_ele_dict.get("jsglkh_button4_4_T3_search")}').click()
+        # table0.close()
+        try:
+            jsglkh_button4_4_T3_data = table0.ele(F'{henan_ele_dict.get("jsglkh_button4_4_T3_data")}').text.split(
+                '\n')[1:]
+            for i in range(len(jsglkh_button4_4_T3_data)):
+                jsglkh_button4_4_T3_data[i] = jsglkh_button4_4_T3_data[i].replace('\t', '').strip()
+        except:
+            jsglkh_button4_4_T3_data = [self.previous_time_d(), self.wfname,
+                                        '0', '0', '0', '0', '0']
+        MC = MysqlCurd()
+        table_name = F'data_sxz_ddgl_bwdyqxkhjg_rhgljg'
+        field_name = ['check_data', 'check_wfname', 'generatrix_name', 'qualified_time',
+                      'unqualified_time', 'count_time', 'rate']
+
+        delect_run_3_8_sql = F"delete from {table_name}  WHERE check_data ='{self.previous_time_d()}' and check_wfname='{self.wfname}'"
+        MC.delete(delect_run_3_8_sql)
+
+        MC.insert_list(table_name, field_name, jsglkh_button4_4_T3_data)
+        res_2 = float(jsglkh_button4_4_T3_data[-1])
+        name = F'异常_并网电压曲线考核结果'
+        logger.warning(F'5_{self.wfname}{name[3:]}')
+
+        if res_2 < 99.9:
+            self.send_ding_sxz(table0, name)
+
+    def exit_username_login(self):
+        try:
+            res = self.page.ele('x://*[@id="app"]/section/header/div/div[2]/div/div/span').click()
+        except  Exception as e:
+            print(F'没有退出选项---{e}')
+            return
+
+        if res:
+            self.page.ele('x:/html/body/ul/li[1]/span').click()
+            self.page.ele('x:/html/body/div[2]/div/div[3]/button[2]').click()
+
+        else:
+            return
 
     def exit_username_oms(self, table0):
         table0.ele('x://*[@id="app"]/section/header/div/div[2]/div[1]/div/span').click()
@@ -440,12 +672,12 @@ class HenanOms(object):
 
     def send_ding_cn3(self, table0):
         time.sleep(3)
-        save_wind_wfname = self.save_pic_cn(table0)
+        save_wind_wfname = self.save_pic(table0)
         from DingInfo.DingBotMix import DingApiTools
         # 天润
-        DAT = DingApiTools(appkey_value=self.appkey, appsecret_value=self.appsecret, chatid_value=self.chatid)
-        DAT.push_message(self.jf_token, self.message_cn3)
-        DAT.send_file(F'{save_wind_wfname}', 0)
+        # DAT = DingApiTools(appkey_value=self.appkey, appsecret_value=self.appsecret, chatid_value=self.chatid)
+        # DAT.push_message(self.jf_token, self.message_cn)
+        # DAT.send_file(F'{save_wind_wfname}', 0)
 
         # 奈卢斯
         DATNLS = DingApiTools(appkey_value=self.nls_appkey, appsecret_value=self.nls_appsecret,
@@ -459,7 +691,7 @@ class HenanOms(object):
 
         update_sql_success = F"update   data_oms  set  是否已完成 =1 ,填报开始时间 = '{self.start_run_time}',填报结束时间 = '{self.now_time_hms()}' where   日期='{self.previous_time_d()}' and 电场名称='{self.wfname}'"
 
-        NEWMC = MysqlCurd(new_south)
+        NEWMC = MysqlCurd()
         NEWMC.update(update_sql_success)
         try:
             fxsqcn = F'飞翔三期储能'
@@ -551,12 +783,12 @@ class HenanOms(object):
 
     def send_ding_cn(self, table0):
         time.sleep(3)
-        save_wind_wfname = self.save_pic_cn(table0)
+        save_wind_wfname = self.save_pic(table0)
         from DingInfo.DingBotMix import DingApiTools
         # 天润
-        DAT = DingApiTools(appkey_value=self.appkey, appsecret_value=self.appsecret, chatid_value=self.chatid)
-        DAT.push_message(self.jf_token, self.message_cn)
-        DAT.send_file(F'{save_wind_wfname}', 0)
+        # DAT = DingApiTools(appkey_value=self.appkey, appsecret_value=self.appsecret, chatid_value=self.chatid)
+        # DAT.push_message(self.jf_token, self.message_cn)
+        # DAT.send_file(F'{save_wind_wfname}', 0)
 
         # 奈卢斯
         DATNLS = DingApiTools(appkey_value=self.nls_appkey, appsecret_value=self.nls_appsecret,
@@ -574,10 +806,10 @@ class HenanOms(object):
         time.sleep(2)
         save_wind_wfname = self.save_pic(table0)
         from DingInfo.DingBotMix import DingApiTools
-        # 天润
-        DAT = DingApiTools(appkey_value=self.appkey, appsecret_value=self.appsecret, chatid_value=self.chatid)
-        DAT.push_message(self.jf_token, self.message_dl)
-        DAT.send_file(F'{save_wind_wfname}', 0)
+        # # 天润
+        # DAT = DingApiTools(appkey_value=self.appkey, appsecret_value=self.appsecret, chatid_value=self.chatid)
+        # DAT.push_message(self.jf_token, self.message_dl)
+        # DAT.send_file(F'{save_wind_wfname}', 0)
 
         # 奈卢斯
         DATNLS = DingApiTools(appkey_value=self.nls_appkey, appsecret_value=self.nls_appsecret,
@@ -608,21 +840,23 @@ class HenanOms(object):
         table0.get_screenshot(path=save_wind_wfname, full_page=True)
 
         return save_wind_wfname
-    def save_pic_cn(self, table0):
+
+    def save_pic_sxz(self, table0, name):
         import os
         from pathlib import Path
-        img_path = Path(f"..{os.sep}Image{os.sep}save_wind{os.sep}{self.previous_time_d()}{os.sep}")
+        img_path = Path(f"..{os.sep}Image{os.sep}save_xsz{os.sep}{self.previous_time_d()}{os.sep}")
         directory = img_path.parent
 
         if not directory.exists():
             directory.mkdir(parents=True, exist_ok=True)
 
         # 对整页截图并保存
-        save_wind_wfname = F"{img_path}{os.sep}{self.wfname}_程序_储能.png"
+        save_wind_wfname = F"{img_path}{os.sep}{self.wfname}_{name}.png"
 
         table0.get_screenshot(path=save_wind_wfname, full_page=True)
 
         return save_wind_wfname
+
     def upload_button(self, table0):
         try:
             table0.ele(F'{henan_ele_dict.get("upload_battery_button")}').click()
@@ -643,11 +877,14 @@ def run_henan_oms():
     # EdgeChromeCurd().open_baidu()
     HenanOms().run_oms()
     # HenanOms().get_henan_data()
+
+
 def run_henan_sxz():
     # EdgeChromeCurd().open_baidu()
     HenanOms().run_sxz()
     # HenanOms().get_henan_data()
 
+
 if __name__ == '__main__':
-    run_henan_oms()
-    # run_henan_sxz()
+    # run_henan_oms()
+    run_henan_sxz()

@@ -1,6 +1,14 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 """
+@Time ： 2024/3/6 2:40
+@Auth ： Xq
+@File ：run_henan_fujian.py
+@IDE ：PyCharm
+"""
+#! /usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
 @Time ： 2024/3/4 21:54
 @Auth ： Xq
 @File ：run_henan_oms.py
@@ -247,7 +255,26 @@ class HenanOms(object):
         time.sleep(1)
         table0 = self.page.get_tab(0)
         try:
+            table0.ele(F'{henan_ele_dict.get("sditz")}').click()
+            table0.ele(F'{henan_ele_dict.get("sdtz")}').click()
+            aa = self.page.get(
+                'https://172.21.10.3:19070/hnoms/static/techcmd/html/noticerevlist.html?title=%E7%9C%81%E8%B0%83%E9%80%9A%E7%9F%A5')
+            table1 = self.page.get_tab(1)
+            DICT_ ={}
+            LI = []
+
+            for i in range(2,10):
+
+                for j  in range(1,2):
+                    aa = self.page.ele(F'x://*[@id="{j}$cell${i}"]/div').text
+                    print(aa)
+                    LI.append(aa)
+                DICT_[j-1]=LI
+            print(DICT_)
+            self.page.to_tab(self.page.tabs[0])
             self.report_load_dl(table0, henan_oms_data)
+            table0 = self.page.get_tab(1)
+
             try:
                 self.exit_username_login()
                 time.sleep(2)

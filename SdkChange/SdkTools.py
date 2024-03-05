@@ -6,6 +6,7 @@
 @File ：SdkTools.py
 @IDE ：PyCharm
 """
+import pygetwindow
 
 # ! /usr/bin/env python
 # -*- coding: utf-8 -*-
@@ -95,6 +96,8 @@ class SdkCurd(object):
         self.double_click(ConfigHenanOmsSdk.dianxin)
         self.double_click(ConfigHenanOmsSdk.link)
         self.double_click(ConfigHenanOmsSdk.confirm)
+        return pygetwindow.getWindowsWithTitle('安全接入网关SDK')[0]
+
 
     def double_click(self, image):
         # x, y = self.find_icon_coordinates(image)

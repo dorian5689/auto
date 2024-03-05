@@ -163,4 +163,15 @@ henan_ele_dict = {
 
     'shoubaofuhe_button': 'x://*[@id="app"]/section/section/aside/div/div/div[1]/div/ul/div[2]/li/div',
     'shoubaofuhe_button_1': 'x://*[@id="app"]/section/section/aside/div/div/div[1]/div/ul/div[2]/li/ul/div[1]/a/li/span',
+
+    # 省地通知
+
+    'sditz':'x://*[@id="app"]/section/section/aside/div/div/div[1]/div/ul/div[8]/li/div/i',
+    # 省调通知
+    'sdtz':'x://*[@id="app"]/section/section/aside/div/div/div[1]/div/ul/div[8]/li/ul/div[1]/a/li/span'
+
+
+
+
+
 }

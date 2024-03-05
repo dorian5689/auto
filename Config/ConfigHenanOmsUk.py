@@ -11,7 +11,7 @@ import os
 arrow = os.path.abspath(os.path.join('..', 'Image', 'uk_button', 'arrow.png'))
 confirm = os.path.abspath(os.path.join('..', 'Image', 'uk_button', 'confirm.png'))
 open_button = os.path.abspath(os.path.join('..', 'Image', 'uk_button', 'openbutton.png'))
-off_all = os.path.abspath(os.path.join('..', 'Image', 'uk_button', 'off_all.png'))
+off_all_uk = os.path.abspath(os.path.join('..', 'Image', 'uk_button', 'off_all.png'))
 use_device_name = os.path.abspath(os.path.join('..', 'Image', 'uk_button', 'use_device_name.png'))
 
 

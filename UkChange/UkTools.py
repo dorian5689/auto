@@ -120,7 +120,7 @@ class UkChangeCurd(object):
         self.choose_device()
         self.double_click(ConfigHenanOmsUk.open_button)
         self.double_click(ConfigHenanOmsUk.confirm)
-        self.double_click(ConfigHenanOmsUk.off_all)
+        self.double_click(ConfigHenanOmsUk.off_all_uk)
         return pygetwindow.getWindowsWithTitle('HUB_Control通用版 示例程序')[0]
 
     def double_click(self, image):
