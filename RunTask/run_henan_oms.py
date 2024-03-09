@@ -11,6 +11,7 @@ import re
 import time
 
 import ddddocr
+import schedule
 from loguru import logger
 from BrowserOperate.EdgeChromeTools import EdgeChromeCurd
 from DataBaseInfo.HenanOmsMysql.henan_oms_config_new import henan_oms_config_new_sql
@@ -649,5 +650,11 @@ def run_henan_sxz():
     # HenanOms().get_henan_data()
 
 if __name__ == '__main__':
-    run_henan_oms()
-    # run_henan_sxz()
+    print(F"保佑,保佑,正常运行!")
+    schedule.every().day.at("00:12").do(run_henan_oms)
+    # run_henan_oms()
+    # run_henan_sxz()90
+    while True:
+        schedule.run_pending()
+
+        time.sleep(1)

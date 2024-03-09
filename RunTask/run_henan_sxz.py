@@ -242,7 +242,7 @@ class HenanOms(object):
         except Exception as e:
             logger.info(F'退出用户登录！{e}')
         self.page.get(get_henan_url, retry=2)
-        # self.page.wait
+        self.page.wait
         self.page(F'{henan_ele_dict.get("input_text")}').input(username)
         self.page(F'{henan_ele_dict.get("input_password")}').input(password)
         self.page.ele(F'{henan_ele_dict.get("capture_img_frame")}').input(self.send_code())
@@ -259,13 +259,16 @@ class HenanOms(object):
         time.sleep(1)
         table0 = self.page.get_tab(0)
         try:
-            self.run_3_8(table0)
-            table0.wait
+            table0.ele('x://*[@id="hamburger-container"]').click()
             table0.ele('x://*[@id="hamburger-container"]').click()
             table0.wait
+            self.run_3_8(table0)
+            table0.wait
+
         except:
             pass
         try:
+
             self.run_3_11(table0)
         except:
             pass
@@ -283,10 +286,10 @@ class HenanOms(object):
             pass
         try:
             self.exit_username_sxz(table0)
-            time.sleep(5)
-            self.exit_username_oms(table0)
+            time.sleep(2)
+            self.exit_username_login()
             try:
-                self.page.quit()
+                table0.close()
                 time.sleep(1)
                 print("网页退出！")
             except:
@@ -304,7 +307,7 @@ class HenanOms(object):
         """
         table0.ele('x://*[@id="app"]/div/div[2]/div/div[1]/div[3]/div[2]/div/span').click()
         table0.ele('x://html/body/ul/li/span').click()
-        table0.ele('x://html/body/div[8]/div/div[3]/button[2]/span').click()
+        table0.ele('x:/html/body/div[8]/div/div[3]/button[2]/span').click()
         table0.close()
         time.sleep(1)
 
@@ -503,7 +506,7 @@ class HenanOms(object):
             return
 
     def exit_username_oms(self, table0):
-        table0.ele('x://*[@id="app"]/section/header/div/div[2]/div[1]/div/span').click()
+        table0.ele('x://*[@id="app"]/section/header/div/div[2]/div/div/span').click()
         table0.ele('x://html/body/ul/li[1]/span').click()
 
         table0.ele('x://*[@id="app"]/section/header/div/div[2]/div[1]/div/span').click()
@@ -880,8 +883,11 @@ def run_henan_oms():
 
 
 def run_henan_sxz():
-    # EdgeChromeCurd().open_baidu()
-    HenanOms().run_sxz()
+    try:
+        EdgeChromeCurd().open_baidu()
+        HenanOms().run_sxz()
+    except Exception as e:
+        logger.warning(F'主函数问题:{e}')
     # HenanOms().get_henan_data()
 
 

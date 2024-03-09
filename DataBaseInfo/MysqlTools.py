@@ -161,6 +161,7 @@ class MysqlCurd(object):
                 cursor.execute(sql, field_data)
                 self.connection.commit()
                 cursor.close()
+                self.log.info(F'添加成功,更新{len(field_data)}条数据')
                 return F'添加成功,更新{len(field_data)}条数据'
         except Exception as e:
             self.log.info(F"请求数据有误:{e}")
