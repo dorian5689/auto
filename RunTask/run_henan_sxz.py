@@ -21,7 +21,7 @@ from SdkChange.SdkTools import SdkCurd
 from UkChange.UkTools import UkChangeCurd
 from Config.ConfigHenanOmsMysql import new_south
 from Config.ConfigHenanOmsUk import off_all_uk
-from Config.ConfigHenanOmsUser import henan_wfname_dict_num, get_henan_url
+from Config.ConfigHenanOmsSxzUser import henan_wfname_dict_num_sxz, get_henan_url
 from Config.ConfigHenanOmsXpath import henan_ele_dict
 from MacInfo.ChangeMAC import SetMac
 
@@ -89,12 +89,12 @@ class HenanOms(object):
         set_mac.run(new_mac)
 
     def login_soft(self):
-
+        time.sleep(2)
         HC = self.UCC.open()
 
         report_li = []
 
-        for i, uuid in henan_wfname_dict_num.items():
+        for i, uuid in henan_wfname_dict_num_sxz.items():
             select_user_info = F"select  usb序号,UK密钥MAC地址,场站,外网oms账号,外网oms密码,wfname_id  from data_oms_uk  where usb序号='{i}' and uuid ='{uuid}'  "
             data_info = MysqlCurd(new_south).query_sql_return_header_and_data(select_user_info).values.tolist()[0]
             select_exit_true = F"SELECT 是否已完成 FROM data_oms where 电场名称='{data_info[2]}' AND 日期='{self.previous_time_d()}'"
@@ -259,27 +259,54 @@ class HenanOms(object):
         time.sleep(1)
         table0 = self.page.get_tab(0)
         try:
-            table0.ele('x://*[@id="hamburger-container"]').click()
+            sxz_text = table0.ele('x://*[@id="app"]/div/div[1]/div[1]/a/h1').text
+        except:
             table0.ele('x://*[@id="hamburger-container"]').click()
             table0.wait
-            self.run_3_8(table0)
+        try:
+            sxz_text = table0.ele('x://*[@id="app"]/div/div[1]/div[1]/a/h1').text
+        except:
+            table0.ele('x://*[@id="hamburger-container"]').click()
             table0.wait
+        try:
 
+            self.run_3_8(table0)
         except:
             pass
+
+        try:
+            sxz_text = table0.ele('x://*[@id="app"]/div/div[1]/div[1]/a/h1').text
+        except:
+            table0.ele('x://*[@id="hamburger-container"]').click()
+            table0.wait
         try:
 
             self.run_3_11(table0)
         except:
             pass
         try:
+            sxz_text = table0.ele('x://*[@id="app"]/div/div[1]/div[1]/a/h1').text
+        except:
+            table0.ele('x://*[@id="hamburger-container"]').click()
+            table0.wait
+        try:
             self.run_4_1(table0)
         except:
             pass
         try:
+            sxz_text = table0.ele('x://*[@id="app"]/div/div[1]/div[1]/a/h1').text
+        except:
+            table0.ele('x://*[@id="hamburger-container"]').click()
+            table0.wait
+        try:
             self.run_4_3(table0)
         except:
             pass
+        try:
+            sxz_text = table0.ele('x://*[@id="app"]/div/div[1]/div[1]/a/h1').text
+        except:
+            table0.ele('x://*[@id="hamburger-container"]').click()
+            table0.wait
         try:
             self.run_4_4(table0)
         except:
@@ -288,6 +315,7 @@ class HenanOms(object):
             self.exit_username_sxz(table0)
             time.sleep(2)
             self.exit_username_login()
+            time.sleep(2)
             try:
                 table0.close()
                 time.sleep(1)
@@ -307,7 +335,27 @@ class HenanOms(object):
         """
         table0.ele('x://*[@id="app"]/div/div[2]/div/div[1]/div[3]/div[2]/div/span').click()
         table0.ele('x://html/body/ul/li/span').click()
-        table0.ele('x:/html/body/div[8]/div/div[3]/button[2]/span').click()
+        for i in range(3, 9):
+            try:
+                table0.ele(F'x:/html/body/div[{i}]/div/div[3]/button[2]/span').click()
+                f'/html/body/div[5]/div/div[3]/button[2]/span'
+                f'/html/body/div[6]/div/div[3]/button[2]/span'
+                break
+            except:
+                continue
+        time.sleep(2)
+
+        # try:
+        #
+        #     table0.ele('x:/html/body/div[8]/div/div[3]/button[2]/span').click()
+        # except:
+        #     try:
+        #         table0.ele('x:/html/body/div[7]/div/div[3]/button[2]/span').click()
+        #     except:
+        #         table0.ele('x:/html/body/div[3]/div/div[3]/button[2]/span').click()
+        #
+        #         table0.ele('x://html/body/div[6]/div/div[3]/button[2]/span').click()
+
         table0.close()
         time.sleep(1)
 
@@ -325,9 +373,9 @@ class HenanOms(object):
         save_wind_wfname = self.save_pic_sxz(table0, name)
         from DingInfo.DingBotMix import DingApiTools
         # 天润
-        # DAT = DingApiTools(appkey_value=self.appkey, appsecret_value=self.appsecret, chatid_value=self.chatid)
-        # DAT.push_message(self.jf_token, self.message_dl)
-        # DAT.send_file(F'{save_wind_wfname}', 0)
+        DAT = DingApiTools(appkey_value=self.appkey, appsecret_value=self.appsecret, chatid_value=self.chatid)
+        DAT.push_message(self.jf_token, self.message_sxz)
+        DAT.send_file(F'{save_wind_wfname}', 0)
 
         # 奈卢斯
         DATNLS = DingApiTools(appkey_value=self.nls_appkey, appsecret_value=self.nls_appsecret,
@@ -678,9 +726,9 @@ class HenanOms(object):
         save_wind_wfname = self.save_pic(table0)
         from DingInfo.DingBotMix import DingApiTools
         # 天润
-        # DAT = DingApiTools(appkey_value=self.appkey, appsecret_value=self.appsecret, chatid_value=self.chatid)
-        # DAT.push_message(self.jf_token, self.message_cn)
-        # DAT.send_file(F'{save_wind_wfname}', 0)
+        DAT = DingApiTools(appkey_value=self.appkey, appsecret_value=self.appsecret, chatid_value=self.chatid)
+        DAT.push_message(self.jf_token, self.message_cn)
+        DAT.send_file(F'{save_wind_wfname}', 0)
 
         # 奈卢斯
         DATNLS = DingApiTools(appkey_value=self.nls_appkey, appsecret_value=self.nls_appsecret,
@@ -789,9 +837,9 @@ class HenanOms(object):
         save_wind_wfname = self.save_pic(table0)
         from DingInfo.DingBotMix import DingApiTools
         # 天润
-        # DAT = DingApiTools(appkey_value=self.appkey, appsecret_value=self.appsecret, chatid_value=self.chatid)
-        # DAT.push_message(self.jf_token, self.message_cn)
-        # DAT.send_file(F'{save_wind_wfname}', 0)
+        DAT = DingApiTools(appkey_value=self.appkey, appsecret_value=self.appsecret, chatid_value=self.chatid)
+        DAT.push_message(self.jf_token, self.message_cn)
+        DAT.send_file(F'{save_wind_wfname}', 0)
 
         # 奈卢斯
         DATNLS = DingApiTools(appkey_value=self.nls_appkey, appsecret_value=self.nls_appsecret,
@@ -810,9 +858,9 @@ class HenanOms(object):
         save_wind_wfname = self.save_pic(table0)
         from DingInfo.DingBotMix import DingApiTools
         # # 天润
-        # DAT = DingApiTools(appkey_value=self.appkey, appsecret_value=self.appsecret, chatid_value=self.chatid)
-        # DAT.push_message(self.jf_token, self.message_dl)
-        # DAT.send_file(F'{save_wind_wfname}', 0)
+        DAT = DingApiTools(appkey_value=self.appkey, appsecret_value=self.appsecret, chatid_value=self.chatid)
+        DAT.push_message(self.jf_token, self.message_dl)
+        DAT.send_file(F'{save_wind_wfname}', 0)
 
         # 奈卢斯
         DATNLS = DingApiTools(appkey_value=self.nls_appkey, appsecret_value=self.nls_appsecret,

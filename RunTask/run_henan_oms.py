@@ -54,8 +54,10 @@ class HenanOms(object):
 
     def run_oms(self):
         self.login_soft()
+
     def run_sxz(self):
         self.login_soft()
+
     def now_time_hms(self):
         from datetime import datetime
         current_time = datetime.now()
@@ -609,6 +611,7 @@ class HenanOms(object):
         table0.get_screenshot(path=save_wind_wfname, full_page=True)
 
         return save_wind_wfname
+
     def save_pic_cn(self, table0):
         import os
         from pathlib import Path
@@ -624,6 +627,7 @@ class HenanOms(object):
         table0.get_screenshot(path=save_wind_wfname, full_page=True)
 
         return save_wind_wfname
+
     def upload_button(self, table0):
         try:
             table0.ele(F'{henan_ele_dict.get("upload_battery_button")}').click()
@@ -644,16 +648,19 @@ def run_henan_oms():
     # EdgeChromeCurd().open_baidu()
     HenanOms().run_oms()
     # HenanOms().get_henan_data()
+
+
 def run_henan_sxz():
     # EdgeChromeCurd().open_baidu()
     HenanOms().run_sxz()
     # HenanOms().get_henan_data()
 
+
 if __name__ == '__main__':
     print(F"保佑,保佑,正常运行!")
     schedule.every().day.at("00:12").do(run_henan_oms)
     # run_henan_oms()
-    # run_henan_sxz()90
+    # run_henan_sxz()
     while True:
         schedule.run_pending()
 

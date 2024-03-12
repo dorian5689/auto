@@ -18,7 +18,7 @@ from SdkChange.SdkTools import SdkCurd
 from UkChange.UkTools import UkChangeCurd
 from Config.ConfigHenanOmsMysql import new_south
 from Config.ConfigHenanOmsUk import off_all_uk
-from Config.ConfigHenanOmsUser import henan_wfname_dict_num, get_henan_url
+from Config.ConfigHenanOmsAttachUser import henan_wfname_dict_num_attach, get_henan_url
 from Config.ConfigHenanOmsXpath import henan_ele_dict
 from MacInfo.ChangeMAC import SetMac
 
@@ -69,12 +69,12 @@ class HenanOms(object):
         set_mac.run(new_mac)
 
     def login_soft(self):
-
+        time.sleep(3)
         HC = self.UCC.open()
 
         report_li = []
 
-        for i, uuid in henan_wfname_dict_num.items():
+        for i, uuid in henan_wfname_dict_num_attach.items():
             select_user_info = F"select  usb序号,UK密钥MAC地址,场站,外网oms账号,外网oms密码,wfname_id  from data_oms_uk  where usb序号='{i}' and uuid ='{uuid}'  "
             data_info = MysqlCurd(new_south).query_sql_return_header_and_data(select_user_info).values.tolist()[0]
             select_exit_true = F"SELECT 是否已完成 FROM data_oms where 电场名称='{data_info[2]}' AND 日期='{self.previous_time_d()}'"
@@ -247,7 +247,7 @@ class HenanOms(object):
             table0.ele(F'{henan_ele_dict.get("sdtz")}').click()
 
             DICT_ = {}
-            for i in range(1, 200):
+            for i in range(1, 10):
                 henan_oms_attach_li = []
                 for j in range(2, 10):
                     aa = table0.ele(F'x://*[@id="{i}$cell${j}"]/div').text
