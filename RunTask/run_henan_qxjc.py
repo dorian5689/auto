@@ -1,11 +1,14 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-@Time ： 2024/3/4 21:54
+@Time ： 2024/3/14 0:37
 @Auth ： Xq
-@File ：run_henan_oms.py
+@File ：run_henan_qxjc.py
 @IDE ：PyCharm
 """
+
+# 河南缺陷检测
+
 import os
 import re
 import time
@@ -23,6 +26,7 @@ from Config.ConfigHenanOmsUk import off_all_uk
 from Config.ConfigHenanOmsUser import henan_wfname_dict_num, get_henan_url
 from Config.ConfigHenanOmsXpath import henan_ele_dict
 from MacInfo.ChangeMAC import SetMac
+from Config.ConfigHenanOmsMarkDown import henan_oms_dict_num_qxjc
 
 
 class HenanOms(object):
@@ -49,6 +53,8 @@ class HenanOms(object):
         self.message_dl = {}
         self.message_cn = {}
         self.message_cn3 = {}
+        self.message_oms_ycxjx_yjh, self.message_oms_ycxjx_zjh, self.message_oms_ycxjx_rjh = {}, {}, {}
+        self.message_oms_ecxjx_zdhzjh, self.message_oms_ecxjx_wnjxjh, self.message_oms_qxgl_czsbqxl = {}, {}, {}
 
         self.start_run_time = ""
 
@@ -59,7 +65,18 @@ class HenanOms(object):
             except Exception as e:
                 logger.warning(F"{e}")
                 pass
-            logger.warning(F"循环上报5次数,第{i+1}次上报完成")
+            logger.warning(F"循环上报5次数,第{i + 1}次上报完成")
+
+        logger.warning(F'当日上报完成@！')
+
+    def run_oms_qxjc(self):
+        for i in range(5):
+            try:
+                self.login_soft_qxjc()
+            except Exception as e:
+                logger.warning(F"{e}")
+                pass
+            logger.warning(F"循环上报5次数,第{i + 1}次上报完成")
 
         logger.warning(F'当日上报完成@！')
 
@@ -67,9 +84,20 @@ class HenanOms(object):
         self.login_soft()
 
     def now_time_hms(self):
+        """
+        年-月-日 时:分:秒
+        """
         from datetime import datetime
         current_time = datetime.now()
         return current_time.strftime("%Y-%m-%d %H:%M:%S")
+
+    def now_time_ymd(self):
+        """
+        年-月-日
+        """
+        from datetime import datetime
+        current_time = datetime.now()
+        return current_time.strftime("%Y-%m-%d")
 
     def previous_time_d(self):
         import datetime
@@ -106,7 +134,7 @@ class HenanOms(object):
                 try:
                     self.UCC.double_click(off_all_uk)
                 except Exception as e:
-                    logger.info(F'点击全部关闭--{e}')
+                    logger.info(F'点击全部关闭__{e}')
 
                 # HC.activate()
                 self.UCC.once_click_num(i)
@@ -135,6 +163,60 @@ class HenanOms(object):
             logger.warning(F'当前上报场站:{self.wfname}\n 用户名：{username}')
 
             self.login_web(username, password)
+
+    def login_soft_qxjc(self):
+
+        HC = self.UCC.open()
+
+        report_li = []
+
+        for i, uuid in henan_wfname_dict_num.items():
+            select_user_info = F"select  usb序号,UK密钥MAC地址,场站,外网oms账号,外网oms密码,wfname_id  from data_oms_uk  where usb序号='{i}' and uuid ='{uuid}'  "
+            data_info = MysqlCurd(new_south).query_sql_return_header_and_data(select_user_info).values.tolist()[0]
+            select_exit_true = F"SELECT 是否已完成 FROM data_oms where 电场名称='{data_info[2]}' AND 日期='{self.previous_time_d()}'"
+            res_exit_ture = MysqlCurd(new_south).query_sql(select_exit_true)
+            if res_exit_ture is None:
+                break
+            if res_exit_ture[0][0] == 1:
+                report_li.append(data_info[5])
+                logger.warning(F'已经上报第{data_info[0]}个场站:{data_info[2]}')
+                # continue
+                pass
+            if HC:
+                HC.maximize()
+                time.sleep(2)
+                try:
+                    self.UCC.double_click(off_all_uk)
+                except Exception as e:
+                    logger.info(F'点击全部关闭__{e}')
+
+                # HC.activate()
+                self.UCC.once_click_num(i)
+                logger.warning(F'选择第{i}个usb')
+                HC.minimize()
+
+            mac_address = data_info[1]
+            userid = int(data_info[0])
+            wfname = data_info[2]
+            if wfname == '飞翔三期储能':
+                return
+            username = data_info[3]
+            password = data_info[4]
+            wfname_id = data_info[5]
+            self.username = username
+            self.password = password
+            self.wfname = wfname
+            self.userid = userid
+            self.wfname_id = wfname_id
+            self.start_run_time = self.now_time_hms()
+
+            self.set_mac_new(mac_address)
+            SC = SdkCurd().open()
+            SC.minimize()
+            logger.warning(F'SDK最小化')
+            logger.warning(F'当前上报场站:{self.wfname}\n 用户名：{username}')
+
+            self.login_web_qxjc(username, password)
 
     def send_code(self):
         cap = self.page.ele(F'{henan_ele_dict.get("capture_img")}')
@@ -224,7 +306,7 @@ class HenanOms(object):
             self.page.wait
             logger.info(F'退出用户成功')
         except Exception as e:
-            logger.info(F'退出用户失败--{e}')
+            logger.info(F'退出用户失败__{e}')
 
     def login_web(self, username, password):
         self.page.get("https://www.baidu.com", retry=2)
@@ -249,7 +331,7 @@ class HenanOms(object):
         try:
             self.login_web_again()
         except Exception as e:
-            logger.warning(F'二次登录--{e}')
+            logger.warning(F'二次登录__{e}')
         henan_oms_data = self.get_henan_data()
         try:
             self.page.ele(F'{henan_ele_dict.get("oms_button")}').click()
@@ -263,7 +345,7 @@ class HenanOms(object):
                 self.exit_username_login()
                 time.sleep(2)
             except Exception as e:
-                logger.warning(F'退出oms登录页！--{e}')
+                logger.warning(F'退出oms登录页！__{e}')
                 pass
         except:
             pass
@@ -271,7 +353,7 @@ class HenanOms(object):
             if self.userid in [6, 8, 11]:
                 self.report_load_cn(table0, henan_oms_data)
         except Exception as e:
-            print(F'6810 ---{e}')
+            print(F'6810 __-{e}')
             pass
         try:
             if self.userid in [10]:
@@ -279,6 +361,50 @@ class HenanOms(object):
                 self.report_load_cn3(table0, henan_oms_data, henan_oms_data3)
         except Exception as e:
             print(F'第{self.userid}有问题:{e}')
+            pass
+
+    def login_web_qxjc(self, username, password):
+        self.page.get("https://www.baidu.com", retry=2)
+        time.sleep(2)
+
+        self.page.close_tabs(others='other')
+        time.sleep(2)
+        # self.page.set.window.fullscreen()
+        self.page.get(get_henan_url, retry=2)
+        time.sleep(2)
+
+        try:
+            self.exit_username_login()
+            time.sleep(2)
+
+        except Exception as e:
+            logger.info(F'退出用户登录！{e}')
+        self.page.get(get_henan_url, retry=2)
+        # self.page.wait
+        self.page(F'{henan_ele_dict.get("input_text")}').input(username)
+        self.page(F'{henan_ele_dict.get("input_password")}').input(password)
+        self.page.ele(F'{henan_ele_dict.get("capture_img_frame")}').input(self.send_code())
+        self.page.ele(F'{henan_ele_dict.get("login_button")}').click()
+        self.page.wait
+        try:
+            self.login_web_again()
+        except Exception as e:
+            logger.warning(F'二次登录__{e}')
+        try:
+            self.page.ele(F'{henan_ele_dict.get("oms_button")}').click()
+        except:
+            return
+        time.sleep(1)
+        table0 = self.page.get_tab(0)
+        try:
+            self.report_ycxjxjh(table0)
+            try:
+                self.exit_username_login()
+                time.sleep(2)
+            except Exception as e:
+                logger.warning(F'退出oms登录页！__{e}')
+                pass
+        except:
             pass
 
     def exit_username_oms(self, table0):
@@ -291,7 +417,7 @@ class HenanOms(object):
             table0.ele('x://html/body/div[28]/div/div[3]/button[2]/span').click()
             time.sleep(1)
         except Exception as e:
-            print(F'重新退出用户测试!--{e}')
+            print(F'重新退出用户测试!__{e}')
             table0.ele('x://html/body/div[23]/div/div[3]/button[2]/span').click()
             time.sleep(1)
 
@@ -332,7 +458,7 @@ class HenanOms(object):
             "markdown": {
                 "title": "OMS推送",
                 "text":
-                    F'第{self.wfname_id}个场站:{self.wfname}--已上报--电量--郑州集控<br>'
+                    F'第{self.wfname_id}个场站:{self.wfname}__已上报__电量__郑州集控<br>'
                     F'发电量:{fdl}<br>上网电量:{swdl}<br>弃电量:{qdl}<br>',
             }
         }
@@ -352,7 +478,7 @@ class HenanOms(object):
             if self.userid in [6, 8, 11]:
                 self.report_load_cn(table0, henan_oms_data)
         except Exception as e:
-            print(F'6810 ---{e}')
+            print(F'6810 __-{e}')
             pass
 
         try:
@@ -363,6 +489,340 @@ class HenanOms(object):
             print(F'第{self.userid}有问题:{e}')
             pass
         table0.close()
+
+    def report_ycxjxjh(self, table0):
+
+        """
+        一次性检修计划__月计划
+        """
+
+        table0.ele(F'{henan_ele_dict.get("oms_ycxjxjh")}').click()
+        logger.warning(F'点击了一次性检修计划')
+        # 一次性检修计划_月计划
+        self.report_ycxjxjh_yjh(table0)
+        table0.wait
+        # 一次性检修计划_周检修
+        self.report_ycxjxjh_zjh(table0)
+        table0.wait
+
+        # 一次性检修计划_日检修
+        self.report_ycxjxjh_rjh(table0)
+        table0.wait
+
+        table0.ele(F'{henan_ele_dict.get("oms_ecjxjh")}').click()
+        table0.wait
+
+        logger.warning(F'点击了二次性检修计划')
+        # 二次性检修计划_自动化检修计划
+        self.report_ecxjxjh_zdjxjh_zdzjh(table0)
+        table0.wait
+
+        self.report_ecxjxjh_zdjxjh_zdhjjjx(table0)
+        table0.wait
+
+        self.report_ecxjxjh_zdjxjh_zdrjh(table0)
+        table0.wait
+        self.report_ecxjxjh_zdjxjh_zdrjhlc(table0)
+        table0.wait
+
+        table0.ele(F'{henan_ele_dict.get("oms_ecjxjh_wajxjh")}').click()
+        table0.wait
+
+        logger.warning(F'点击了二次性检修计划_网安检修计划')
+        # 二次性检修计划_网安检修计划
+        self.report_ecxjxjh_wajcjh_wazjhgl(table0)
+        table0.wait
+
+        self.report_ecxjxjh_wajcjh_warjhlc(table0)
+        table0.wait
+
+        # 缺陷管理
+        table0.ele(F'{henan_ele_dict.get("oms_qxgl")}').click()
+        table0.wait
+        logger.warning(F'点击了缺陷管理')
+        # 缺陷管理_场站设备缺陷
+        table0.ele(F'{henan_ele_dict.get("oms_qxgl_czsbqxl")}').click()
+        logger.warning(F'点击了缺陷管理_场站设备缺陷')
+        self.report_oms_qxgl_czsbqxl_qxlcgl(table0)
+
+        # 退出当前用户
+        try:
+            self.exit_username_oms(table0)
+        except:
+            pass
+        try:
+            self.exit_username_login()
+        except:
+            pass
+
+    def report_ycxjxjh_yjh(self, table0):
+
+        table0.ele(F'{henan_ele_dict.get("oms_ycxjxjh_yjh")}').click()
+        table0.wait
+
+        logger.warning(F'点击了一次性检修计划_月计划')
+        table0.ele(F'{henan_ele_dict.get("oms_ycxjxjh_yjh_fdjx")}').click()
+        table0.wait
+
+        logger.warning(F'点击了一次性检修计划_月计划_发电检修')
+        table0.ele(F'{henan_ele_dict.get("oms_ycxjxjh_yjh_fdjx_fdyjhst")}').click()
+        table0.wait
+
+        logger.warning(F'点击了一次性检修计划_月计划_发电检修_发电月计划视图')
+
+        table0.ele(F'{henan_ele_dict.get("oms_ycxjxjh_zdhjxjh_yjh_fdjx_fdyjhst_nian")}').input(F'{2024}\ue007')
+        table0.wait
+
+        logger.warning(F'点击了一次性检修计划__月计划__发电检修__发电月计划视图__年')
+        table0.ele(F'{henan_ele_dict.get("oms_ycxjxjh_zdhjxjh_yjh_fdjx_fdyjhst_yue")}').input(F'{3}\ue007')
+        table0.wait
+
+        logger.warning(F'点击了一次性检修计划__月计划__发电检修__发电月计划视图__月')
+        table0.ele(F'{henan_ele_dict.get("oms_ycxjxjh_zdhjxjh_yjh_fdjx_fdyjhst_cx")}').click()
+        table0.wait
+
+        logger.warning(F'点击了一次性检修计划__月计划__发电检修__发电月计划视图__查询')
+        # 推送到定性
+
+        if 1 == 1:
+            henan_oms_dict_num_qxjc.get("message_oms_ycxjx_yjh")["markdown"][
+                "text"] = F'第{self.wfname_id}个场站__{self.wfname}_{henan_oms_dict_num_qxjc.get("message_oms_ycxjx_yjh")["markdown"]["text"]}'
+            self.oms_ycxjx_yjh = henan_oms_dict_num_qxjc.get("message_oms_ycxjx_yjh")
+            self.send_ding_qxjc_message(table0, self.oms_ycxjx_yjh)
+            henan_oms_dict_num_qxjc.get("message_oms_ycxjx_yjh")["markdown"][
+                "text"] = henan_oms_dict_num_qxjc.get("message_oms_ycxjx_yjh")["markdown"]["text"].replace(
+                F"第{self.wfname_id}个场站__{self.wfname}_", "")
+            logger.warning(F'一次性检修计划__月计划__发电检修__发电月计划视图,已上报')
+
+    def report_ycxjxjh_zjh(self, table0):
+
+        table0.ele(F'{henan_ele_dict.get("oms_ycxjxjh_zjh")}').click()
+        table0.wait
+
+        logger.warning(F'点击了一次性检修计划__周计划')
+        table0.ele(F'{henan_ele_dict.get("oms_ycxjxjh_zdhjxjh_zjh_fdjx")}').click()
+        table0.wait
+        logger.warning(F'点击了一次性检修计划__周计划__发电检修')
+
+        table0.ele(F'{henan_ele_dict.get("oms_ycxjxjh_zdhjxjh_zjh_fdjx_fdzjhst")}').click()
+        table0.wait
+        logger.warning(F'点击了一次性检修计划__周计划__发电检修__发电周计划视图')
+        time.sleep(3)
+        table0.ele(F'{henan_ele_dict.get("oms_ycxjxjh_zdhjxjh_zjh_fdjx_fdzjhst_cx")}').click()
+        table0.wait
+        logger.warning(F'点击了一次性检修计划__周计划__发电检修__发电周计划视图__查询')
+        # 推送到定性
+
+        if 1 == 1:
+            henan_oms_dict_num_qxjc.get("message_oms_ycxjx_zjh")["markdown"][
+                "text"] = F'第{self.wfname_id}个场站__{self.wfname}_{henan_oms_dict_num_qxjc.get("message_oms_ycxjx_zjh")["markdown"]["text"]}'
+
+            self.message_oms_ycxjx_zjh = henan_oms_dict_num_qxjc.get("message_oms_ycxjx_zjh")
+            self.send_ding_qxjc_message(table0, self.message_oms_ycxjx_zjh)
+            henan_oms_dict_num_qxjc.get("message_oms_ycxjx_zjh")["markdown"]["text"] = \
+                henan_oms_dict_num_qxjc.get("message_oms_ycxjx_zjh")["markdown"]["text"].replace(
+                    F"第{self.wfname_id}个场站__{self.wfname}_", "")
+            logger.warning(F'一次性检修计划__周计划__发电检修__发电周计划视图,已上报')
+        time.sleep(3)
+
+    def report_ycxjxjh_rjh(self, table0):
+
+        table0.ele(F'{henan_ele_dict.get("oms_ycxjxjh_rjh")}').click()
+        table0.wait
+
+        logger.warning(F'点击了一次性检修计划__日计划')
+        table0.ele(F'{henan_ele_dict.get("oms_ycxjxjh_rjh_fdjx")}').click()
+        table0.wait
+
+        logger.warning(F'点击了一次性检修计划__日计划__发电检修')
+        table0.ele(F'{henan_ele_dict.get("oms_ycxjxjh_rjh_fdjx_fdrjhst")}').click()
+        table0.wait
+
+        logger.warning(F'点击了一次性检修计划__日计划__发电检修__发电日计划视图')
+        time.sleep(3)
+        # table0.ele(F'{henan_ele_dict.get("oms_ycxjxjh_rjh_fdjx_fdrjhst_cx")}').click()
+        table0.wait
+        logger.warning(F'点击了一次性检修计划__日计划__发电检修__发电日计划视图__查询')
+
+        if 1 == 1:
+            henan_oms_dict_num_qxjc.get("message_oms_ycxjx_rjh")["markdown"][
+                "text"] = F'第{self.wfname_id}个场站__{self.wfname}_{henan_oms_dict_num_qxjc.get("message_oms_ycxjx_rjh")["markdown"]["text"]}'
+
+            self.message_oms_ycxjx_rjh = henan_oms_dict_num_qxjc.get("message_oms_ycxjx_rjh")
+            self.send_ding_qxjc_message(table0, self.message_oms_ycxjx_rjh)
+            henan_oms_dict_num_qxjc.get("message_oms_ycxjx_rjh")["markdown"][
+                "text"] = henan_oms_dict_num_qxjc.get("message_oms_ycxjx_rjh")["markdown"][
+                "text"].replace(F"第{self.wfname_id}个场站__{self.wfname}_", "")
+            logger.warning(F'一次性检修计划__日计划__发电检修__发电日计划视图,已上报')
+        time.sleep(3)
+
+    def report_ecxjxjh_zdjxjh_zdzjh(self, table0):
+
+        table0.ele(F'{henan_ele_dict.get("oms_ecjxjh_zdhjxjh")}').click()
+        table0.wait
+
+        logger.warning(F'点击了二次性检修计划__自动检修计划')
+        table0.ele(F'{henan_ele_dict.get("oms_ecjxjh_zdjxjh_zdhzjh")}').click()
+        table0.wait
+
+        logger.warning(F'点击了二次性检修计划__自动检修计划__自动化周计划')
+        time.sleep(3)
+        # table0.ele(F'已上报').click()
+        table0.wait
+
+        if 1 == 1:
+            # todo  表格待做
+            henan_oms_dict_num_qxjc.get("message_oms_ecxjx_zdhzjh_zdhzjh")["markdown"][
+                "text"] = F'第{self.wfname_id}个场站__{self.wfname}_{henan_oms_dict_num_qxjc.get("message_oms_ecxjx_zdhzjh_zdhzjh")["markdown"]["text"]}'
+
+            self.message_oms_ecxjx_zdhzjh = henan_oms_dict_num_qxjc.get("message_oms_ecxjx_zdhzjh_zdhzjh")
+            self.send_ding_qxjc_message(table0, self.message_oms_ecxjx_zdhzjh)
+            henan_oms_dict_num_qxjc.get("message_oms_ecxjx_zdhzjh_zdhzjh")["markdown"][
+                "text"] = henan_oms_dict_num_qxjc.get("message_oms_ecxjx_zdhzjh_zdhzjh")["markdown"][
+                "text"].replace(F"第{self.wfname_id}个场站__{self.wfname}_", "")
+            logger.warning(F'二次性检修计划__自动检修计划__自动化周计划已上报')
+        time.sleep(3)
+
+    def report_ecxjxjh_zdjxjh_zdhjjjx(self, table0):
+
+        table0.ele(F'{henan_ele_dict.get("oms_ecjxjh_zdjxjh_zdhjjjx")}').click()
+        table0.wait
+
+        logger.warning(F'点击了二次性检修计划__自动检修计划__自动化紧急检修')
+        time.sleep(3)
+        # table0.ele(F'已上报').click()
+        table0.wait
+
+        if 1 == 1:
+            # todo  表格待做
+            henan_oms_dict_num_qxjc.get("message_oms_ecxjx_zdhzjh_zdhjjjx")["markdown"][
+                "text"] = F'第{self.wfname_id}个场站__{self.wfname}_{henan_oms_dict_num_qxjc.get("message_oms_ecxjx_zdhzjh_zdhjjjx")["markdown"]["text"]}'
+
+            self.message_oms_ecxjx_zdhzjh = henan_oms_dict_num_qxjc.get("message_oms_ecxjx_zdhzjh_zdhjjjx")
+            self.send_ding_qxjc_message(table0, self.message_oms_ecxjx_zdhzjh)
+            henan_oms_dict_num_qxjc.get("message_oms_ecxjx_zdhzjh_zdhjjjx")["markdown"][
+                "text"] = henan_oms_dict_num_qxjc.get("message_oms_ecxjx_zdhzjh_zdhjjjx")["markdown"][
+                "text"].replace(F"第{self.wfname_id}个场站__{self.wfname}_", "")
+            logger.warning(F'二次性检修计划__自动检修计划__自动化紧急检修已上报')
+        time.sleep(3)
+
+    def report_ecxjxjh_zdjxjh_zdrjh(self, table0):
+
+        table0.ele(F'{henan_ele_dict.get("oms_ecjxjh_zdjxjh_zdhrjh")}').click()
+        table0.wait
+
+        logger.warning(F'点击了二次性检修计划__自动检修计划__自动化日计划')
+        time.sleep(3)
+        # table0.ele(F'已上报').click()
+        table0.wait
+
+        if 1 == 1:
+            # todo  表格待做
+            henan_oms_dict_num_qxjc.get("message_oms_ecxjx_zdhzjh_zdhrjh")["markdown"][
+                "text"] = F'第{self.wfname_id}个场站__{self.wfname}_{henan_oms_dict_num_qxjc.get("message_oms_ecxjx_zdhzjh_zdhrjh")["markdown"]["text"]}'
+
+            self.message_oms_ecxjx_zdhzjh = henan_oms_dict_num_qxjc.get("message_oms_ecxjx_zdhzjh_zdhrjh")
+            self.send_ding_qxjc_message(table0, self.message_oms_ecxjx_zdhzjh)
+            henan_oms_dict_num_qxjc.get("message_oms_ecxjx_zdhzjh_zdhrjh")["markdown"][
+                "text"] = henan_oms_dict_num_qxjc.get("message_oms_ecxjx_zdhzjh_zdhrjh")["markdown"][
+                "text"].replace(F"第{self.wfname_id}个场站__{self.wfname}_", "")
+            logger.warning(F'二次性检修计划__自动检修计划__自动化日计划已上报')
+        time.sleep(3)
+
+    def report_ecxjxjh_zdjxjh_zdrjhlc(self, table0):
+
+        table0.ele(F'{henan_ele_dict.get("oms_ecjxjh_zdjxjh_zdhrjhlc")}').click()
+        table0.wait
+
+        logger.warning(F'点击了二次检修计划_自动化检修计划_自动化日计划流程')
+        time.sleep(3)
+
+        # table0.ele(F'流转中').click()
+        table0.wait
+
+        if 1 == 1:
+            # todo  表格待做
+            henan_oms_dict_num_qxjc.get("message_oms_ecxjx_zdhzjh_zdhrjhlc")["markdown"][
+                "text"] = F'第{self.wfname_id}个场站__{self.wfname}_{henan_oms_dict_num_qxjc.get("message_oms_ecxjx_zdhzjh_zdhrjhlc")["markdown"]["text"]}'
+
+            self.message_oms_ecxjx_wnjxjh = henan_oms_dict_num_qxjc.get("message_oms_ecxjx_zdhzjh_zdhrjhlc")
+            self.send_ding_qxjc_message(table0, self.message_oms_ecxjx_wnjxjh)
+            henan_oms_dict_num_qxjc.get("message_oms_ecxjx_zdhzjh_zdhrjhlc")["markdown"][
+                "text"] = henan_oms_dict_num_qxjc.get("message_oms_ecxjx_zdhzjh_zdhrjhlc")["markdown"][
+                "text"].replace(F"第{self.wfname_id}个场站__{self.wfname}_", "")
+            logger.warning(F'二次检修计划_自动化检修计划_自动化日计划流程已上报')
+        time.sleep(3)
+
+    def report_ecxjxjh_wajcjh_wazjhgl(self, table0):
+
+        table0.ele(F'{henan_ele_dict.get("oms_ecjxjh_wajxjh_wazjhgl")}').click()
+        table0.wait
+
+        logger.warning(F'点击了二次检修计划_网安检修计划_网安周计划管理')
+        time.sleep(3)
+
+        # table0.ele(F'已上报').click()
+        table0.wait
+
+        if 1 == 1:
+            # todo  表格待做
+            henan_oms_dict_num_qxjc.get("message_oms_ecxjx_wajxjh_wazjggl")["markdown"][
+                "text"] = F'第{self.wfname_id}个场站__{self.wfname}_{henan_oms_dict_num_qxjc.get("message_oms_ecxjx_wajxjh_wazjggl")["markdown"]["text"]}'
+
+            self.message_oms_ecxjx_wnjxjh = henan_oms_dict_num_qxjc.get("message_oms_ecxjx_wajxjh_wazjggl")
+            self.send_ding_qxjc_message(table0, self.message_oms_ecxjx_wnjxjh)
+            henan_oms_dict_num_qxjc.get("message_oms_ecxjx_wajxjh_wazjggl")["markdown"][
+                "text"] = henan_oms_dict_num_qxjc.get("message_oms_ecxjx_wajxjh_wazjggl")["markdown"][
+                "text"].replace(F"第{self.wfname_id}个场站__{self.wfname}_", "")
+            logger.warning(F'二次检修计划_网安检修计划_网安周计划管理已上报')
+        time.sleep(3)
+
+    def report_ecxjxjh_wajcjh_warjhlc(self, table0):
+
+        table0.ele(F'{henan_ele_dict.get("oms_ecjxjh_wajxjh_warlhlcgl")}').click()
+        table0.wait
+
+        logger.warning(F'点击了二次检修计划_网安检修计划_网安日计划流程管理')
+        time.sleep(3)
+
+        # table0.ele(F'已上报').click()
+        table0.wait
+
+        if 1 == 1:
+            # todo  表格待做
+            henan_oms_dict_num_qxjc.get("message_oms_ecxjx_wajxjh_wazrjhlcgl")["markdown"][
+                "text"] = F'第{self.wfname_id}个场站__{self.wfname}_{henan_oms_dict_num_qxjc.get("message_oms_ecxjx_wajxjh_wazrjhlcgl")["markdown"]["text"]}'
+
+            self.message_oms_ecxjx_wnjxjh = henan_oms_dict_num_qxjc.get("message_oms_ecxjx_wajxjh_wazrjhlcgl")
+            self.send_ding_qxjc_message(table0, self.message_oms_ecxjx_wnjxjh)
+            henan_oms_dict_num_qxjc.get("message_oms_ecxjx_wajxjh_wazrjhlcgl")["markdown"][
+                "text"] = henan_oms_dict_num_qxjc.get("message_oms_ecxjx_wajxjh_wazrjhlcgl")["markdown"][
+                "text"].replace(F"第{self.wfname_id}个场站__{self.wfname}_", "")
+            logger.warning(F'二次检修计划_网安检修计划_网安日计划流程管理已上报')
+        time.sleep(3)
+
+    def report_oms_qxgl_czsbqxl_qxlcgl(self, table0):
+
+        table0.ele(F'{henan_ele_dict.get("oms_qxgl_czsbqxl_qxlcgl")}').click()
+        table0.wait
+
+        logger.warning(F'点击了缺陷管理_场站设备缺陷(老)')
+        time.sleep(3)
+
+        # table0.ele(f'流转中').click()
+        table0.wait
+
+        if 1 == 1:
+            # todo  表格待做
+            henan_oms_dict_num_qxjc.get("message_oms_qxgl_czsbqxl")["markdown"][
+                "text"] = F'第{self.wfname_id}个场站__{self.wfname}_{henan_oms_dict_num_qxjc.get("message_oms_qxgl_czsbqxl")["markdown"]["text"]}'
+
+            self.message_oms_qxgl_czsbqxl = henan_oms_dict_num_qxjc.get("message_oms_qxgl_czsbqxl")
+            self.send_ding_qxjc_message(table0, self.message_oms_qxgl_czsbqxl)
+            henan_oms_dict_num_qxjc.get("message_oms_qxgl_czsbqxl")["markdown"][
+                "text"] = henan_oms_dict_num_qxjc.get("message_oms_qxgl_czsbqxl")["markdown"][
+                "text"].replace(F"第{self.wfname_id}个场站__{self.wfname}_", "")
+            logger.warning(F'缺陷管理__场站设备缺陷(老)__产站设备缺陷__已上报')
 
     def report_load_cn3(self, table0, henan_oms_data, henan_oms_data3):
         time.sleep(2)
@@ -389,7 +849,7 @@ class HenanOms(object):
             "markdown": {
                 "title": "OMS推送",
                 "text":
-                    F'第{self.wfname_id}个场站:{self.wfname}--已上报--储能--郑州集控<br>'
+                    F'第{self.wfname_id}个场站:{self.wfname}__已上报__储能__郑州集控<br>'
                     F'储能日最大充电电力:{cnrzdcddl}<br>储能日最大放电电力:{cnrzdfddl}<br>'
                     F'储能日充电量:{cnrcdl}<br>储能日放电量:{cnrfdl}<br>'
                     F'储能日充电次数:{cnrcdcs}<br>储能日放电次数:{cnrfdcs}<br>'
@@ -517,7 +977,7 @@ class HenanOms(object):
             "markdown": {
                 "title": "OMS推送",
                 "text":
-                    F'第{self.wfname_id}个场站:{self.wfname}--已上报--储能--郑州集控<br>'
+                    F'第{self.wfname_id}个场站:{self.wfname}__已上报__储能__郑州集控<br>'
                     F'储能日最大充电电力:{cnrzdcddl}<br>储能日最大放电电力:{cnrzdfddl}<br>'
                     F'储能日充电量:{cnrcdl}<br>储能日放电量:{cnrfdl}<br>'
                     F'储能日充电次数:{cnrcdcs}<br>储能日放电次数:{cnrfdcs}<br>'
@@ -599,6 +1059,24 @@ class HenanOms(object):
 
         self.update_mysql()
 
+    def send_ding_qxjc_message(self, table0, message):
+        time.sleep(2)
+        save_wind_wfname = self.save_pic_qxjc(table0)
+        from DingInfo.DingBotMix import DingApiTools
+        # 天润
+        # DAT = DingApiTools(appkey_value=self.appkey, appsecret_value=self.appsecret, chatid_value=self.chatid)
+        # DAT.push_message(self.jf_token, self.message_dl)
+        # DAT.send_file(F'{save_wind_wfname}', 0)
+
+        # 奈卢斯
+        DATNLS = DingApiTools(appkey_value=self.nls_appkey, appsecret_value=self.nls_appsecret,
+                              chatid_value=self.nls_chatid)
+
+        DATNLS.push_message(self.nls_token, message)
+        DATNLS.send_file(F'{save_wind_wfname}', 0)
+
+        self.update_mysql()
+
     def update_mysql(self):
 
         update_sql_success = F"update   data_oms  set  是否已完成 =1 ,填报开始时间 = '{self.start_run_time}',填报结束时间 = '{self.now_time_hms()}' where   日期='{self.previous_time_d()}' and 电场名称='{self.wfname}'"
@@ -615,6 +1093,22 @@ class HenanOms(object):
 
         # 对整页截图并保存
         save_wind_wfname = F"{img_path}{os.sep}{self.wfname}_程序.png"
+
+        table0.get_screenshot(path=save_wind_wfname, full_page=True)
+
+        return save_wind_wfname
+
+    def save_pic_qxjc(self, table0):
+        import os
+        from pathlib import Path
+        img_path = Path(f"..{os.sep}Image{os.sep}qxjc{os.sep}{self.previous_time_d()}{os.sep}")
+        directory = img_path.parent
+
+        if not directory.exists():
+            directory.mkdir(parents=True, exist_ok=True)
+
+        # 对整页截图并保存
+        save_wind_wfname = F"{img_path}{os.sep}{self.wfname}缺陷检测.png"
 
         table0.get_screenshot(path=save_wind_wfname, full_page=True)
 
@@ -640,11 +1134,11 @@ class HenanOms(object):
         try:
             table0.ele(F'{henan_ele_dict.get("upload_battery_button")}').click()
             hadle_alert_true = table0.handle_alert(accept=True)
-            logger.warning(F'这里是点击确定后的返回值！--{hadle_alert_true}')
+            logger.warning(F'这里是点击确定后的返回值！__{hadle_alert_true}')
         except Exception as e:
             table0.ele(F'{henan_ele_dict.get("upload_battery_button")}').click()
             hadle_alert_true = table0.handle_alert(accept=True)
-            logger.warning(F'这里是点击确定后的返回值！--{hadle_alert_true}')
+            logger.warning(F'这里是点击确定后的返回值！__{hadle_alert_true}')
             pass
 
     def report_sxz(self):
@@ -658,6 +1152,12 @@ def run_henan_oms():
     # HenanOms().get_henan_data()
 
 
+def run_henan_qxjc():
+    # EdgeChromeCurd().open_baidu()
+    HenanOms().run_oms_qxjc()
+    # HenanOms().get_henan_data()
+
+
 def run_henan_sxz():
     # EdgeChromeCurd().open_baidu()
     HenanOms().run_sxz()
@@ -667,9 +1167,9 @@ def run_henan_sxz():
 if __name__ == '__main__':
     print(F"正常运行!")
     print(F"时间00:12和 00:40 两次")
-    # run_henan_oms()
+    run_henan_qxjc()
 
-    schedule.every().day.at("00:12").do(run_henan_oms)
+    schedule.every().day.at("00:12").do(run_henan_qxjc)
     schedule.every().day.at("00:40").do(run_henan_oms)
     # run_henan_oms()
     # run_henan_sxz()

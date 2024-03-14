@@ -168,10 +168,60 @@ henan_ele_dict = {
 
     'sditz':'x://*[@id="app"]/section/section/aside/div/div/div[1]/div/ul/div[8]/li/div/i',
     # 省调通知
-    'sdtz':'x://*[@id="app"]/section/section/aside/div/div/div[1]/div/ul/div[8]/li/ul/div[1]/a/li/span'
+    'sdtz':'x://*[@id="app"]/section/section/aside/div/div/div[1]/div/ul/div[8]/li/ul/div[1]/a/li/span',
 
 
+    # Oms一次性检修计划
+    'oms_ycxjxjh':'x://*[@id="app"]/section/section/aside/div/div/div[1]/div/ul/div[3]/li/div/span',
+    # 一次性检修计划_月计划
+    'oms_ycxjxjh_yjh':'x://*[@id="app"]/section/section/aside/div/div/div[1]/div/ul/div[3]/li/ul/div[2]/li/div/span',
+    # 一次性检修计划_月计划_发电检修
+    'oms_ycxjxjh_yjh_fdjx':'x://*[@id="app"]/section/section/aside/div/div/div[1]/div/ul/div[3]/li/ul/div[2]/li/ul/div[1]/li/div/span',
+    # 一次性检修计划_月计划_发电检修_发电月计划视图
+    'oms_ycxjxjh_yjh_fdjx_fdyjhst':'x://*[@id="app"]/section/section/aside/div/div/div[1]/div/ul/div[3]/li/ul/div[2]/li/ul/div[1]/li/ul/div/a/li/span',
+    'oms_ycxjxjh_zdhjxjh_yjh_fdjx_fdyjhst_nian':'x://*[@id="app"]/section/section/main/section/div/div/div[1]/div/div[1]/form[1]/div/div[1]/div/div/div[2]/div/div/input',
+    'oms_ycxjxjh_zdhjxjh_yjh_fdjx_fdyjhst_yue':'x://*[@id="app"]/section/section/main/section/div/div/div[1]/div/div[1]/form[1]/div/div[2]/div/div/div[2]/div/div/input',
+    'oms_ycxjxjh_zdhjxjh_yjh_fdjx_fdyjhst_cx':'x://*[@id="app"]/section/section/main/section/div/div/div[1]/div/div[1]/form[2]/div/div/button/span',
+    # 一次性检修计划_周计划
+    'oms_ycxjxjh_zjh': 'x://*[@id="app"]/section/section/aside/div/div/div[1]/div/ul/div[3]/li/ul/div[3]/li/div/span',
+    # 一次性检修计划_周计划_发电检修
+    'oms_ycxjxjh_zdhjxjh_zjh_fdjx': 'x://*[@id="app"]/section/section/aside/div/div/div[1]/div/ul/div[3]/li/ul/div[3]/li/ul/div[2]/li/div/span',
+    # 一次性检修计划_周计划_发电检修_发电周计划视图
+    'oms_ycxjxjh_zdhjxjh_zjh_fdjx_fdzjhst': 'x://*[@id="app"]/section/section/aside/div/div/div[1]/div/ul/div[3]/li/ul/div[3]/li/ul/div[2]/li/ul/div/a/li/span',
+    'oms_ycxjxjh_zdhjxjh_zjh_fdjx_fdzjhst_cx': 'x://*[@id="app"]/section/section/main/section/div/div/div[1]/div/div[1]/form[2]/div/div/button/span',
+    # 一次性检修计划_日计划
+    'oms_ycxjxjh_rjh': 'x://*[@id="app"]/section/section/aside/div/div/div[1]/div/ul/div[3]/li/ul/div[4]/li/div/span',
+    # 一次性检修计划_日计划_发电检修
+    'oms_ycxjxjh_rjh_fdjx': 'x://*[@id="app"]/section/section/aside/div/div/div[1]/div/ul/div[3]/li/ul/div[4]/li/ul/div[2]/li/div/span',
+    # 一次性检修计划_日计划_发电检修_发电日计划视图
+    'oms_ycxjxjh_rjh_fdjx_fdrjhst': 'x://*[@id="app"]/section/section/aside/div/div/div[1]/div/ul/div[3]/li/ul/div[4]/li/ul/div[2]/li/ul/div[3]/a/li/span',
+    'oms_ycxjxjh_rjh_fdjx_fdrjhst_cx': 'x://*[@id="app"]/section/section/main/section/div/div/div[1]/div/div[1]/form[2]/div/div/button/span',
 
+    # 二次检修计划
+    'oms_ecjxjh': 'x://*[@id="app"]/section/section/aside/div/div/div[1]/div/ul/div[4]/li/div/span',
+    # 二次检修计划_自动化检修计划
+    'oms_ecjxjh_zdhjxjh': 'x://*[@id="app"]/section/section/aside/div/div/div[1]/div/ul/div[4]/li/ul/div[1]/li/div/span',
+    # 二次检修计划_自动化检修计划_自动化周计划
+    'oms_ecjxjh_zdjxjh_zdhzjh': 'x://*[@id="app"]/section/section/aside/div/div/div[1]/div/ul/div[4]/li/ul/div[1]/li/ul/div[1]/a/li/span',
+    # 二次性检修计划__自动检修计划__自动化紧急检修
+    'oms_ecjxjh_zdjxjh_zdhjjjx': 'x://*[@id="app"]/section/section/aside/div/div/div[1]/div/ul/div[4]/li/ul/div[1]/li/ul/div[2]/a/li/span',
+    # 二次性检修计划__自动检修计划__自动化日计划
+    'oms_ecjxjh_zdjxjh_zdhrjh': 'x://*[@id="app"]/section/section/aside/div/div/div[1]/div/ul/div[4]/li/ul/div[1]/li/ul/div[3]/a/li/span',
+    # 二次检修计划__自动化检修计划__自动化日计划流程
+    'oms_ecjxjh_zdjxjh_zdhrjhlc': 'x://*[@id="app"]/section/section/aside/div/div/div[1]/div/ul/div[4]/li/ul/div[1]/li/ul/div[4]/a/li/span',
+    # 二次检修计划_网安检修计划
+    'oms_ecjxjh_wajxjh': 'x://*[@id="app"]/section/section/aside/div/div/div[1]/div/ul/div[4]/li/ul/div[2]/li/div/span',
+    # 二次检修计划_网安检修计划_网安周计划管理
+    'oms_ecjxjh_wajxjh_wazjhgl': 'x://*[@id="app"]/section/section/aside/div/div/div[1]/div/ul/div[4]/li/ul/div[2]/li/ul/div[1]/a/li/span',
+    # 二次检修计划_网安检修计划_网安日计划流程管理
+    'oms_ecjxjh_wajxjh_warlhlcgl': 'x://*[@id="app"]/section/section/aside/div/div/div[1]/div/ul/div[4]/li/ul/div[2]/li/ul/div[2]/a/li/span',
+
+    # 缺陷管理
+    'oms_qxgl': 'x://*[@id="app"]/section/section/aside/div/div/div[1]/div/ul/div[11]/li/div/span',
+    # 缺陷管理_场站设备缺陷(老)
+    'oms_qxgl_czsbqxl': 'x://*[@id="app"]/section/section/aside/div/div/div[1]/div/ul/div[11]/li/ul/div[1]/li/div/span',
+    #缺陷管理_场站设备缺陷(老)_缺陷流程管理
+    'oms_qxgl_czsbqxl_qxlcgl': 'x://*[@id="app"]/section/section/aside/div/div/div[1]/div/ul/div[11]/li/ul/div[1]/li/ul/div/a/li/span',
 
 
 }
