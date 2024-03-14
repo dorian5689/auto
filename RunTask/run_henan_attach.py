@@ -49,8 +49,6 @@ class HenanOms(object):
     def run_oms(self):
         self.login_soft()
 
-
-
     def now_time_hms(self):
         from datetime import datetime
         current_time = datetime.now()
@@ -208,6 +206,39 @@ class HenanOms(object):
         except Exception as e:
             logger.info(F'退出用户失败--{e}')
 
+    def save_pic_attach(self, table0):
+        import os
+        from pathlib import Path
+        img_path = Path(f"..{os.sep}Image{os.sep}attach{os.sep}{self.previous_time_d()}{os.sep}")
+        directory = img_path.parent
+
+        if not directory.exists():
+            directory.mkdir(parents=True, exist_ok=True)
+
+        # 对整页截图并保存
+        save_wind_wfname = F"{img_path}{os.sep}{self.wfname}附件.png"
+
+        table0.get_screenshot(path=save_wind_wfname, full_page=True)
+
+        return save_wind_wfname
+
+    def send_ding_attach_message(self, table0, message, attach_file):
+        time.sleep(2)
+        from DingInfo.DingBotMix import DingApiTools
+        # 天润
+        DAT = DingApiTools(appkey_value=self.appkey, appsecret_value=self.appsecret, chatid_value=self.chatid)
+        DAT.push_message(self.jf_token,message)
+        DAT.send_file(F'{attach_file}', 1)
+
+        # 奈卢斯
+        DATNLS = DingApiTools(appkey_value=self.nls_appkey, appsecret_value=self.nls_appsecret,
+                              chatid_value=self.nls_chatid)
+
+        DATNLS.push_message(self.nls_token, message)
+        DATNLS.send_file(F'{attach_file}', 1)
+
+        # self.update_mysql()
+
     def login_web(self, username, password):
         self.page.get("https://www.baidu.com", retry=2)
         self.page.close_tabs(others='other')
@@ -253,6 +284,7 @@ class HenanOms(object):
                     aa = table0.ele(F'x://*[@id="{i}$cell${j}"]/div').text
                     if j != 9:
                         henan_oms_attach_li.append(aa)
+
                     if j == 9:
                         table0.ele(F'x://*[@id="{i}$cell${j}"]/div').click()
                         from Config.ConfigHenanOmsDownLoad import henan_attach
@@ -292,6 +324,42 @@ class HenanOms(object):
                                         old_file_path = os.path.join(root, file)
                                         new_file_path = os.path.join(root, attach_name)
                                         os.rename(old_file_path, F'{new_file_path}')
+
+                                fbsj_ = table0.ele(F'x://*[@id="{i}$cell${j - 1}"]/div').text
+                                # fbsj_ = '2024-03-14 16:15'
+                                from datetime import datetime
+                                given_date = datetime.strptime(fbsj_, '%Y-%m-%d %H:%M')
+                                now = datetime.now()
+                                today = now.date()
+
+                                # 比较日期是否相等
+                                if given_date.date() == today:
+                                    # 推送钉钉
+                                    pass
+                                    fkjzrq_ = henan_oms_attach_li[2].strip()
+                                    if not fkjzrq_ :
+                                        fkjzrq_ = '空'
+                                    fksj_= henan_oms_attach_li[4].strip()
+                                    if not fksj_:
+                                        fksj_ = '空'
+                                    message = {
+                                        "msgtype": "markdown",
+                                        "markdown": {
+                                            "title": "附件信息推送",
+                                            "text":
+                                                F'省调通知<br>'
+                                                F'主题：{henan_oms_attach_li[0]}<br>'
+                                                F'是否需反馈：{henan_oms_attach_li[1]}<br>'
+                                                F'反馈截至日期：{ fkjzrq_}<br>'
+                                                F'处理信息：{henan_oms_attach_li[3]}<br>'
+                                                F'反馈时间：{fksj_}<br>'
+                                                F'发布人：{henan_oms_attach_li[5]}<br>'
+                                                F'发布时间：{henan_oms_attach_li[6]}<br>'
+                                                F'详情见附件：{henan_oms_attach_li[7]}<br>'
+                                        }
+                                    }
+                                    self.send_ding_attach_message(table0, message,
+                                                                  attach_file=F'{folder_path}{os.sep}{attach_name}')
 
                                 with open(F'{folder_path}{os.sep}{attach_name}', 'rb') as file:
                                     binary_data = file.read()

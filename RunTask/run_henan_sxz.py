@@ -12,6 +12,7 @@ import re
 import time
 
 import ddddocr
+import schedule
 from loguru import logger
 from BrowserOperate.EdgeChromeTools import EdgeChromeCurd
 from DataBaseInfo.HenanOmsMysql.henan_oms_config_new import henan_oms_config_new_sql
@@ -24,6 +25,7 @@ from Config.ConfigHenanOmsUk import off_all_uk
 from Config.ConfigHenanOmsSxzUser import henan_wfname_dict_num_sxz, get_henan_url
 from Config.ConfigHenanOmsXpath import henan_ele_dict
 from MacInfo.ChangeMAC import SetMac
+from Config.ConfigHenanOmsMarkDown import henan_oms_dict_num_md_sxz
 
 
 class HenanOms(object):
@@ -75,6 +77,11 @@ class HenanOms(object):
         from datetime import datetime
         current_time = datetime.now()
         return current_time.strftime("%Y-%m-%d ")
+
+    def now_time_ymd_chinese(self):
+        from datetime import datetime
+        current_time = datetime.now()
+        return current_time.strftime("%Y年%m月%d日")
 
     def previous_time_d(self):
         import datetime
@@ -314,18 +321,16 @@ class HenanOms(object):
         try:
             self.exit_username_sxz(table0)
             time.sleep(2)
+            print("网页退出！")
+        except:
+            pass
+        try:
             self.exit_username_login()
             time.sleep(2)
-            try:
-                table0.close()
-                time.sleep(1)
-                print("网页退出！")
-            except:
-                pass
-            return 1
-        except Exception as e:
-            print(f'运行失败！{e}')
-            return 0
+        except:
+            pass
+        table0.close()
+        return 1
 
     def exit_username_sxz(self, table0):
         """
@@ -359,7 +364,7 @@ class HenanOms(object):
         table0.close()
         time.sleep(1)
 
-    def send_ding_sxz(self, table0, name):
+    def send_ding_sxz(self, table0, name=None, message=None):
         self.message_sxz = {
             "msgtype": "markdown",
             "markdown": {
@@ -374,15 +379,16 @@ class HenanOms(object):
         from DingInfo.DingBotMix import DingApiTools
         # 天润
         DAT = DingApiTools(appkey_value=self.appkey, appsecret_value=self.appsecret, chatid_value=self.chatid)
-        DAT.push_message(self.jf_token, self.message_sxz)
+        # DAT.push_message(self.jf_token, self.message_sxz)
+        DAT.push_message(self.jf_token, message)
         DAT.send_file(F'{save_wind_wfname}', 0)
 
         # 奈卢斯
         DATNLS = DingApiTools(appkey_value=self.nls_appkey, appsecret_value=self.nls_appsecret,
                               chatid_value=self.nls_chatid)
 
-        DATNLS.push_message(self.nls_token, self.message_sxz)
-        DATNLS.send_file(F'{save_wind_wfname}', 0)
+        # DATNLS.push_message(self.nls_token, message)
+        # DATNLS.send_file(F'{save_wind_wfname}', 0)
 
         # self.update_mysql()
 
@@ -419,8 +425,10 @@ class HenanOms(object):
         name = F'_异常_风光功率预测考核日考核数据汇总'
         logger.warning(F'1{name[3:]}')
 
-        if res_4 < 80 and res__2 < 85:
-            self.send_ding_sxz(table0, name)
+        if res_4 < 80 or res__2 < 85:
+            message = {"msgtype": "markdown", "markdown": {"title": "双细则推送",
+                                                           "text": F'南方大区豫北区域双细则日考核数据异常信息：<br>风电场 ：{self.wfname}；<br>考核日期：{self.now_time_ymd_chinese()}；<br>考核指标：风功率预测；<br>（1）日前预测准确率%：{res_4}；<br>（2）实时预测准确率%：{res__2}；<br>'}}
+            self.send_ding_sxz(table0, name, message)
 
     def run_3_11(self, table0):
         table0.ele(F'{henan_ele_dict.get("ddglkh_button3_11")}').click()  # 有功功率变化日考核结果 3-11
@@ -447,8 +455,11 @@ class HenanOms(object):
         res_3 = float(ddglkh_button3_11_L111_data[3])
         name = F'_异常_有功功率变化日考核结果'
         logger.info(F'2_{self.wfname}{name}')
-        if res_2 > 0 and res_3 > 0:
-            self.send_ding_sxz(table0, name=name)
+        if res_2 > 0 or res_3 > 0:
+            message = {"msgtype": "markdown", "markdown": {"title": "双细则推送",
+                                                           "text": F'南方大区豫北区域双细则日考核数据异常信息：<br>风电场 ：{self.wfname}；<br>考核日期：{self.now_time_ymd_chinese()}；<br>考核指标：有功功率变化考核；<br>（1）1min 考核电量：{res_2}MWH；<br>（2）10min考核电量：{res_3}MWH；<br>'}}
+
+            self.send_ding_sxz(table0, name, message)
 
     def run_4_1(self, table0):
         table0.ele(F'{henan_ele_dict.get("jsglkh_button4")}').click()  # 技术考核管理 4
@@ -476,7 +487,10 @@ class HenanOms(object):
         name = F'异常_AGC投运率'
         logger.info(F'3_{self.wfname}{name}')
         if res_2 < 98:
-            self.send_ding_sxz(table0, name)
+            message = {"msgtype": "markdown", "markdown": {"title": "双细则推送",
+                                                           "text": F'南方大区豫北区域双细则日考核数据异常信息：<br>风电场 ：{self.wfname}；<br>考核日期：{self.now_time_ymd_chinese()}；<br>考核指标：动态无功装置补偿可用率；<br>（1）投运率：：{res_2}%；<br>'}}
+
+            self.send_ding_sxz(table0, name, message)
 
     def run_4_3(self, table0):
         table0.ele(F'{henan_ele_dict.get("jsglkh_button4_3")}').click()  # 有功调节能力考核 4-3
@@ -505,7 +519,10 @@ class HenanOms(object):
         logger.warning(F'4_{self.wfname}{name[3:]}')
 
         if res_2 < 96:
-            self.send_ding_sxz(table0, name)
+            message = {"msgtype": "markdown", "markdown": {"title": "双细则推送",
+                                                           "text": F'南方大区豫北区域双细则日考核数据异常信息：<br>风电场 ：{self.wfname}；<br>考核日期：{self.now_time_ymd_chinese()}；<br>考核指标：AGC投运率；<br>（1）投运率：：{res_2}%；<br>'}}
+
+            self.send_ding_sxz(table0, name, message)
 
     def run_4_4(self, table0):
         table0.ele(F'{henan_ele_dict.get("jsglkh_button4_4")}').click()  # 并网电压曲线考核结果 4-4
@@ -537,7 +554,10 @@ class HenanOms(object):
         logger.warning(F'5_{self.wfname}{name[3:]}')
 
         if res_2 < 99.9:
-            self.send_ding_sxz(table0, name)
+            message = {"msgtype": "markdown", "markdown": {"title": "双细则推送",
+                                                           "text": F'南方大区豫北区域双细则日考核数据异常信息：<br>风电场 ：{self.wfname}；<br>考核日期：{self.now_time_ymd_chinese()}；<br>考核指标：AGC合格率；<br>（1）投运率：：{res_2}%；<br>'}}
+
+            self.send_ding_sxz(table0, name, message)
 
     def exit_username_login(self):
         try:
@@ -940,5 +960,15 @@ def run_henan_sxz():
 
 
 if __name__ == '__main__':
+    print("Qaz")
     # run_henan_oms()
-    run_henan_sxz()
+    # run_henan_sxz()
+
+    schedule.every().day.at("17:00").do(run_henan_sxz)
+    # run_henan_oms()
+    # run_henan_sxz()
+    while True:
+        schedule.run_pending()
+
+        time.sleep(1)
+
