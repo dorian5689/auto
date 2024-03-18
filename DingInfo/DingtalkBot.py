@@ -2,7 +2,7 @@
 # -*-coding:utf-8-*-
 import json
 import requests
-from AutoLogin.LogInfo.LogTools import Logger
+from LogInfo.LogTools import Logger
 
 
 # 钉钉开放API的相关信息

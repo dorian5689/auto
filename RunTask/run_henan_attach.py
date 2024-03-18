@@ -8,9 +8,14 @@
 """
 
 import os
+import sys
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import re
 import time
 import ddddocr
+import schedule
+
 from loguru import logger
 from BrowserOperate.EdgeChromeTools import EdgeChromeCurd
 from DataBaseInfo.MysqlTools import MysqlCurd
@@ -227,7 +232,7 @@ class HenanOms(object):
         from DingInfo.DingBotMix import DingApiTools
         # 天润
         DAT = DingApiTools(appkey_value=self.appkey, appsecret_value=self.appsecret, chatid_value=self.chatid)
-        DAT.push_message(self.jf_token,message)
+        DAT.push_message(self.jf_token, message)
         DAT.send_file(F'{attach_file}', 1)
 
         # 奈卢斯
@@ -278,7 +283,7 @@ class HenanOms(object):
             table0.ele(F'{henan_ele_dict.get("sdtz")}').click()
 
             DICT_ = {}
-            for i in range(1, 10):
+            for i in range(1, 3):
                 henan_oms_attach_li = []
                 for j in range(2, 10):
                     aa = table0.ele(F'x://*[@id="{i}$cell${j}"]/div').text
@@ -337,9 +342,9 @@ class HenanOms(object):
                                     # 推送钉钉
                                     pass
                                     fkjzrq_ = henan_oms_attach_li[2].strip()
-                                    if not fkjzrq_ :
+                                    if not fkjzrq_:
                                         fkjzrq_ = '空'
-                                    fksj_= henan_oms_attach_li[4].strip()
+                                    fksj_ = henan_oms_attach_li[4].strip()
                                     if not fksj_:
                                         fksj_ = '空'
                                     message = {
@@ -350,7 +355,7 @@ class HenanOms(object):
                                                 F'省调通知<br>'
                                                 F'主题：{henan_oms_attach_li[0]}<br>'
                                                 F'是否需反馈：{henan_oms_attach_li[1]}<br>'
-                                                F'反馈截至日期：{ fkjzrq_}<br>'
+                                                F'反馈截至日期：{fkjzrq_}<br>'
                                                 F'处理信息：{henan_oms_attach_li[3]}<br>'
                                                 F'反馈时间：{fksj_}<br>'
                                                 F'发布人：{henan_oms_attach_li[5]}<br>'
@@ -422,4 +427,13 @@ def run_henan_oms_attach():
 
 
 if __name__ == '__main__':
+
     run_henan_oms_attach()
+
+    # schedule.every().day.at("14:00").do(run_henan_oms_attach)
+    # # run_henan_oms()
+    # # run_henan_sxz()
+    # while True:
+    #     schedule.run_pending()
+    #
+    #     time.sleep(1)

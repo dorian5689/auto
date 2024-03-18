@@ -10,7 +10,9 @@
 import os
 import re
 import time
+import sys
 
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import ddddocr
 import schedule
 from loguru import logger
@@ -25,7 +27,7 @@ from Config.ConfigHenanOmsUk import off_all_uk
 from Config.ConfigHenanOmsSxzUser import henan_wfname_dict_num_sxz, get_henan_url
 from Config.ConfigHenanOmsXpath import henan_ele_dict
 from MacInfo.ChangeMAC import SetMac
-from Config.ConfigHenanOmsMarkDown import henan_oms_dict_num_md_sxz
+from Config.ConfigHenanOmsMarkDown import henan_oms_dict_num_qxjc
 
 
 class HenanOms(object):
@@ -962,13 +964,13 @@ def run_henan_sxz():
 if __name__ == '__main__':
     print("Qaz")
     # run_henan_oms()
-    # run_henan_sxz()
-
-    schedule.every().day.at("17:00").do(run_henan_sxz)
-    # run_henan_oms()
-    # run_henan_sxz()
-    while True:
-        schedule.run_pending()
-
-        time.sleep(1)
+    run_henan_sxz()
+    #
+    # schedule.every().day.at("17:00").do(run_henan_sxz)
+    # # run_henan_oms()
+    # # run_henan_sxz()
+    # while True:
+    #     schedule.run_pending()
+    #
+    #     time.sleep(1)
 

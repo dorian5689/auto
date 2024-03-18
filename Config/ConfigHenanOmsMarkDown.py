@@ -12,6 +12,8 @@
 
 钉钉推送的文本在这里修改
 """
+
+
 henan_oms_dict_num_qxjc = {
     "message_oms_ycxjx_yjh": {
         "msgtype": "markdown",
@@ -21,6 +23,10 @@ henan_oms_dict_num_qxjc = {
                 F'一次性检修计划__月计划__发电检修__发电月计划视图<br>'
         }
     },
+
+
+
+
     "message_oms_ycxjx_zjh": {
         "msgtype": "markdown",
         "markdown": {

@@ -12,7 +12,9 @@
 import os
 import re
 import time
+import sys
 
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import ddddocr
 import schedule
 from loguru import logger
@@ -1166,14 +1168,14 @@ def run_henan_sxz():
 
 if __name__ == '__main__':
     print(F"正常运行!")
-    print(F"时间00:12和 00:40 两次")
+
     run_henan_qxjc()
 
-    schedule.every().day.at("00:12").do(run_henan_qxjc)
-    schedule.every().day.at("00:40").do(run_henan_oms)
-    # run_henan_oms()
-    # run_henan_sxz()
-    while True:
-        schedule.run_pending()
-
-        time.sleep(1)
+    # schedule.every().day.at("00:12").do(run_henan_qxjc)
+    # schedule.every().day.at("00:40").do(run_henan_oms)
+    # # run_henan_oms()
+    # # run_henan_sxz()
+    # while True:
+    #     schedule.run_pending()
+    #
+    #     time.sleep(1)

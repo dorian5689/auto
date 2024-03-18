@@ -6,9 +6,12 @@
 @File ：run_henan_oms.py
 @IDE ：PyCharm
 """
-import os
+
+
+import os,sys
 import re
 import time
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import ddddocr
 import schedule
@@ -23,7 +26,6 @@ from Config.ConfigHenanOmsUk import off_all_uk
 from Config.ConfigHenanOmsUser import henan_wfname_dict_num, get_henan_url
 from Config.ConfigHenanOmsXpath import henan_ele_dict
 from MacInfo.ChangeMAC import SetMac
-
 
 class HenanOms(object):
     def __init__(self):
@@ -667,13 +669,13 @@ def run_henan_sxz():
 if __name__ == '__main__':
     print(F"正常运行!")
     print(F"时间00:12和 00:40 两次")
-    # run_henan_oms()
-
-    schedule.every().day.at("00:12").do(run_henan_oms)
-    schedule.every().day.at("00:40").do(run_henan_oms)
-    # run_henan_oms()
-    # run_henan_sxz()
-    while True:
-        schedule.run_pending()
-
-        time.sleep(1)
+    run_henan_oms()
+#
+    # schedule.every().day.at("00:12").do(run_henan_oms)
+    # schedule.every().day.at("00:40").do(run_henan_oms)
+    # # run_henan_oms()
+    # # run_henan_sxz()
+    # while True:
+    #     schedule.run_pending()
+    #
+    #     time.sleep(1)
