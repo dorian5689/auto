@@ -143,12 +143,20 @@ class HenanOms(object):
         cap.click()
         time.sleep(2)
 
-        import os
-        path = os.path.abspath(__file__)
-        par_path = os.path.dirname(os.path.dirname(path))
-        path = F"{par_path}{os.sep}Image{os.sep}CaptureImg"
+        # import os
+        # path = os.path.abspath(__file__)
+        # par_path = os.path.dirname(os.path.dirname(path))
+        # path = F"{par_path}{os.sep}Image{os.sep}CaptureImg"
         img_name = "验证码.png"
-        img_path = F"{path}{os.sep}{img_name}"
+        # img_path = F"{path}{os.sep}{img_name}"
+
+        import os
+        current_path = os.path.abspath(__file__)  # 获取当前脚本的绝对路径
+        parent_path = os.path.dirname(current_path)  # 获取当前脚本所在目录的父目录
+        # parent_path = os.path.dirname(parent_path)  # 获取当前脚本所在目录的父目录
+        path = os.path.join(parent_path, 'Image', 'CaptureImg')
+        img_path = os.path.join(parent_path, 'Image', 'CaptureImg', F'{img_name}')
+
         try:
             import shutil
             shutil.rmtree(path)
@@ -609,14 +617,24 @@ class HenanOms(object):
     def save_pic(self, table0):
         import os
         from pathlib import Path
-        img_path = Path(f"..{os.sep}Image{os.sep}save_wind{os.sep}{self.previous_time_d()}{os.sep}")
-        directory = img_path.parent
 
-        if not directory.exists():
-            directory.mkdir(parents=True, exist_ok=True)
+
+
+        # img_path = Path(f"..{os.sep}Image{os.sep}save_wind{os.sep}{self.previous_time_d()}{os.sep}")
+        # directory = img_path.parent
+
+
+        import os
+        current_path = os.path.abspath(__file__)  # 获取当前脚本的绝对路径
+        parent_path = os.path.dirname(current_path)  # 获取当前脚本所在目录的父目录
+        # parent_path = os.path.dirname(parent_path)  # 获取当前脚本所在目录的父目录
+        directory = os.path.join(parent_path, 'Image', 'save_wind')
+        save_wind_wfname = os.path.join(parent_path, 'Image', 'save_wind', F'{self.wfname}_程序.png')
+        if not os.path.exists(directory):
+            os.makedirs(directory)
 
         # 对整页截图并保存
-        save_wind_wfname = F"{img_path}{os.sep}{self.wfname}_程序.png"
+        # save_wind_wfname = F"{img_path}{os.sep}{self.wfname}_程序.png"
 
         table0.get_screenshot(path=save_wind_wfname, full_page=True)
 
@@ -624,15 +642,22 @@ class HenanOms(object):
 
     def save_pic_cn(self, table0):
         import os
-        from pathlib import Path
-        img_path = Path(f"..{os.sep}Image{os.sep}save_wind{os.sep}{self.previous_time_d()}{os.sep}")
-        directory = img_path.parent
+        # from pathlib import Path
+        # img_path = Path(f"..{os.sep}Image{os.sep}save_wind{os.sep}{self.previous_time_d()}{os.sep}")
+        # directory = img_path.parent
 
-        if not directory.exists():
-            directory.mkdir(parents=True, exist_ok=True)
+
+        current_path = os.path.abspath(__file__)  # 获取当前脚本的绝对路径
+        parent_path = os.path.dirname(current_path)  # 获取当前脚本所在目录的父目录
+        # parent_path = os.path.dirname(parent_path)  # 获取当前脚本所在目录的父目录
+        directory = os.path.join(parent_path, 'Image', 'save_wind')
+        save_wind_wfname = os.path.join(parent_path, 'Image', 'save_wind', F'{self.wfname}_程序_储能.png')
+
+        if not os.path.exists(directory):
+            os.makedirs(directory)
 
         # 对整页截图并保存
-        save_wind_wfname = F"{img_path}{os.sep}{self.wfname}_程序_储能.png"
+        # save_wind_wfname = F"{img_path}{os.sep}{self.wfname}_程序_储能.png"
 
         table0.get_screenshot(path=save_wind_wfname, full_page=True)
 

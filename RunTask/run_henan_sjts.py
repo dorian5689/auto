@@ -126,10 +126,14 @@ def runtask():
             "title": "推送-数据入库",
             "text": F"OMS数据已经入库,<br>入库时间为<br>{save_data}"}
         DT = DingapiTools()
-        # DT.SendMessageDing(token, markdown_true)
+        DT.SendMessageDing(token, markdown_true)
         # DT.SendMessageDing(token, markdown_true)
     except Exception as e:
         print(e)
+
+def push_henan_oms_pic():
+    pass
+
 
 
 if __name__ == '__main__':

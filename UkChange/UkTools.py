@@ -132,8 +132,17 @@ class UkChangeCurd(object):
     def once_click_num(self,num):
         filename_prefix = str(num)
         filename = f"{filename_prefix}.png"
-        directory = os.path.abspath(os.path.join('..', 'Image', 'HenanOmsUkButton'))
-        full_path = os.path.join(directory, filename)
+
+        import os
+        current_path = os.path.abspath(__file__)  # 获取当前脚本的绝对路径
+        parent_path = os.path.dirname(current_path)  # 获取当前脚本所在目录的父目录
+        parent_path = os.path.dirname(parent_path)  # 获取当前脚本所在目录的父目录
+        full_path = os.path.join(parent_path, 'Image', 'HenanOmsUkButton', F'{filename}')
+
+
+
+        # directory = os.path.abspath(os.path.join('..', 'Image', 'HenanOmsUkButton'))
+        # full_path = os.path.join(directory, filename)
         self.once_click(full_path)
         time.sleep(2)
 

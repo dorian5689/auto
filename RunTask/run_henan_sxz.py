@@ -110,10 +110,10 @@ class HenanOms(object):
             res_exit_ture = MysqlCurd(new_south).query_sql(select_exit_true)
             if res_exit_ture is None:
                 break
-            if res_exit_ture[0] == 1:
-                print(F'已上报:{data_info[2]}')
-                report_li.append(data_info[5])
-                continue
+            # if res_exit_ture[0] == 1:
+            #     print(F'已上报:{data_info[2]}')
+            #     report_li.append(data_info[5])
+            #     continue
             if HC:
                 HC.maximize()
                 time.sleep(2)

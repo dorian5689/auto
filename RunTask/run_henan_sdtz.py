@@ -3,7 +3,7 @@
 """
 @Time ： 2024/3/6 2:40
 @Auth ： Xq
-@File ：run_henan_attach.py
+@File ：run_henan_sdtz.py
 @IDE ：PyCharm
 """
 
@@ -293,7 +293,8 @@ class HenanOms(object):
                     if j == 9:
                         table0.ele(F'x://*[@id="{i}$cell${j}"]/div').click()
                         from Config.ConfigHenanOmsDownLoad import henan_attach
-                        down_load_folder_path = F'{henan_attach}{os.sep}henan_oms_attach'
+                        down_load_folder_path = henan_attach
+                        # down_load_folder_path = F'{henan_attach}{os.sep}henan_oms_attach'
                         table0.set.download_path(down_load_folder_path)
 
                         for num in range(1, 5):
