@@ -71,6 +71,14 @@ class EdgeChromeCurd(object):
 
         page.quit()
 
+    def open_fanruan(self,url):
+        ECT = EdgeChromeCurd()
+        page = ECT.page
+        page.get(url)
+        time.sleep(3)
+
+        return page
+
 # if __name__ == '__main__':
 #     ECT = EdgeChromeCurd()
 #     ECT.page.get("https://www.baidu.com")

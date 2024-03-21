@@ -916,15 +916,21 @@ class HenanOms(object):
 
     def save_pic_sxz(self, table0, name):
         import os
-        from pathlib import Path
-        img_path = Path(f"..{os.sep}Image{os.sep}save_xsz{os.sep}{self.previous_time_d()}{os.sep}")
-        directory = img_path.parent
+        # from pathlib import Path
+        # img_path = Path(f"..{os.sep}Image{os.sep}save_xsz{os.sep}{self.previous_time_d()}{os.sep}")
+        # directory = img_path.parent
 
-        if not directory.exists():
-            directory.mkdir(parents=True, exist_ok=True)
+        current_path = os.path.abspath(__file__)  # 获取当前脚本的绝对路径
+        parent_path = os.path.dirname(current_path)  # 获取当前脚本所在目录的父目录
+        # parent_path = os.path.dirname(parent_path)  # 获取当前脚本所在目录的父目录
+        directory = os.path.join(parent_path, 'Image', 'save_xsz')
+        save_wind_wfname = os.path.join(parent_path, 'Image', 'save_xsz', F'{self.wfname}_双细则.png')
 
-        # 对整页截图并保存
-        save_wind_wfname = F"{img_path}{os.sep}{self.wfname}_{name}.png"
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        # # 对整页截图并保存
+        # save_wind_wfname = F"{img_path}{os.sep}{self.wfname}_{name}.png"
 
         table0.get_screenshot(path=save_wind_wfname, full_page=True)
 
@@ -973,4 +979,3 @@ if __name__ == '__main__':
     #     schedule.run_pending()
     #
     #     time.sleep(1)
-
