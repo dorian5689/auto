@@ -557,7 +557,7 @@ class HenanOms(object):
 
         if res_2 < 99.9:
             message = {"msgtype": "markdown", "markdown": {"title": "双细则推送",
-                                                           "text": F'南方大区豫北区域双细则日考核数据异常信息：<br>风电场 ：{self.wfname}；<br>考核日期：{self.now_time_ymd_chinese()}；<br>考核指标：AGC合格率；<br>（1）投运率：：{res_2}%；<br>'}}
+                                                           "text": F'南方大区豫北区域双细则日考核数据异常信息：<br>风电场 ：{self.wfname}；<br>考核日期：{self.now_time_ymd_chinese()}；<br>考核指标：AVC合格率；<br>（1）投运率：：{res_2}%；<br>'}}
 
             self.send_ding_sxz(table0, name, message)
 
