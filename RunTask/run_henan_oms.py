@@ -571,6 +571,7 @@ class HenanOms(object):
         self.send_ding_cn(table0)
 
     def send_ding_cn(self, table0):
+
         time.sleep(3)
         save_wind_wfname = self.save_pic_cn(table0)
         from DingInfo.DingBotMix import DingApiTools
@@ -664,6 +665,7 @@ class HenanOms(object):
         return save_wind_wfname
 
     def upload_button(self, table0):
+
         try:
             table0.ele(F'{henan_ele_dict.get("upload_battery_button")}').click()
             hadle_alert_true = table0.handle_alert(accept=True)
@@ -673,6 +675,14 @@ class HenanOms(object):
             hadle_alert_true = table0.handle_alert(accept=True)
             logger.warning(F'这里是点击确定后的返回值！--{hadle_alert_true}')
             pass
+        """ 更新检测是否上报机制"""
+        self.page.refresh()
+        if self.previous_time_d() == table0.ele(F'{henan_ele_dict.get("upload_date")}').text:
+            self.send_ding_dl(table0)
+        else:
+            return
+
+
 
     def report_sxz(self):
         self.page.ele(F'{henan_ele_dict.get("sxz_button")}').click()

@@ -203,8 +203,8 @@ class HeNanReportData():
             self.send_ding_henan_sjts(page, message)
 
         except Exception as e:
-            print(e)
 
+            print(e)
 
 def runtask():
     HeNanReportData().report_data()
